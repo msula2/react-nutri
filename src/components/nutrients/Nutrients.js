@@ -20,17 +20,32 @@ class Nutrients extends Component{
                                 <div className="card bg-light-red">
                                     <div className="flex">
                                         <div className="w-80 pa3">
-                                            <p className="washed-red">
+                                            <p className="washed">
                                                 Carbohydrates are one of the three macronutrients essential for human health, 
                                                 alongside proteins and fats. They serve as the primary source of energy for 
                                                 the body and play a crucial role in various physiological functions.
                                             </p>
                                         </div>
-                                        <div className="card-title washed-red">Carbohydrates</div>
+                                        <div className="card-title washed">Carbohydrates</div>
                                     </div>
                                 </div>
-                            </Link>
-                            
+                            </Link>    
+                        </div>
+                        <div className="fl w-100 w-third-ns pa2 mt2">
+                            <Link to="/nutrients/protiens" style={{textDecoration: "none"}}>
+                                <div className="card bg-pink">
+                                    <div className="flex">
+                                        <div className="w-80 pa3">
+                                            <p className="washed">
+                                            Proteins are one of the three macronutrients essential for human health, alongside 
+                                            carbohydrates and fats. They serve as the building blocks of tissues, muscles, organs, 
+                                            enzymes, hormones, and various other molecules in the body. 
+                                            </p>
+                                        </div>
+                                        <div className="card-title washed">Protiens</div>
+                                    </div>
+                                </div>
+                            </Link>    
                         </div>
                     </div>
                 </div>
