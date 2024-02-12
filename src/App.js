@@ -5,6 +5,8 @@ import Navigation from './components/navigation/Navigation';
 import Nutrients from "./components/nutrients/Nutrients";
 import Carbohydrates from "./components/nutrients/carbohydrates/Carbohydrates";
 import Protiens from './components/nutrients/protiens/Protiens';
+import Fats from './components/nutrients/fats/Fats';
+import Vitamins from './components/nutrients/vitamins/Vitamins';
 
 class App extends Component {
   render() {
@@ -15,6 +17,8 @@ class App extends Component {
             <Route path="nutrients" element={<Nutrients />} />
             <Route path="/nutrients/carbohydrates" element={<Carbohydrates />} />
             <Route path="/nutrients/protiens" element={<Protiens />} />
+            <Route path="/nutrients/fats" element={<Fats />} />
+            <Route path="/nutrients/vitamins" element={<Vitamins />} />
         </Routes>
       </BrowserRouter>
     );

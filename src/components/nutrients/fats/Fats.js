@@ -1,7 +1,7 @@
 import React from 'react';
 import About from '../../about/About';
 import Title from '../../title/Title';
-import {carbs_desc} from '../../../descriptions';
+import {fats_desc} from '../../../descriptions';
 import fats_logo from "../../../assets/imgs/fats.png"
 const Fats = () => {
     return(
