@@ -4,6 +4,7 @@ import './App.css';
 import Navigation from './components/navigation/Navigation';
 import Nutrients from "./components/nutrients/Nutrients";
 import Carbohydrates from "./components/nutrients/carbohydrates/Carbohydrates";
+import Protiens from './components/nutrients/protiens/Protiens';
 
 class App extends Component {
   render() {
@@ -13,6 +14,7 @@ class App extends Component {
         <Routes>
             <Route path="nutrients" element={<Nutrients />} />
             <Route path="/nutrients/carbohydrates" element={<Carbohydrates />} />
+            <Route path="/nutrients/protiens" element={<Protiens />} />
         </Routes>
       </BrowserRouter>
     );

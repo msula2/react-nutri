@@ -29,4 +29,15 @@ export const carbs_desc =   `Carbohydrates are made of carbon, hydrogen, and oxy
                             movement of substances through the vessels of the cardiovascular or lymphatic
                             system, providing a source of energy for cells and tissues.`;
 
+export const protiens_desc = `Proteins are organic compounds made of smaller building blocks called amino
+                            acids. Unlike carbohydrates and lipids, amino acids contain nitrogen as well as
+                            carbon, hydrogen, and oxygen. Proteins are found in a variety of foods, but
+                            meats and dairy products are among the most concentrated sources. Grains,
+                            legumes, and vegetables all contribute protein to the diet, whereas fruits con-
+                            tribute negligible amounts. The amino acids that we get from dietary protein
+                            combine with the amino acids made in the body to make hundreds of different
+                            body proteins. Proteins are the main structural material in the body. They are
+                            also important components in blood, cell membranes, enzymes, and immune
+                            factors.29 Proteins regulate body processes and can also be used for energy.`
+
 
