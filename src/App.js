@@ -7,6 +7,7 @@ import Carbohydrates from "./components/nutrients/carbohydrates/Carbohydrates";
 import Protiens from './components/nutrients/protiens/Protiens';
 import Fats from './components/nutrients/fats/Fats';
 import Vitamins from './components/nutrients/vitamins/Vitamins';
+import Login from './components/login/Login.js';
 
 class App extends Component {
   render() {
@@ -19,6 +20,7 @@ class App extends Component {
             <Route path="/nutrients/protiens" element={<Protiens />} />
             <Route path="/nutrients/fats" element={<Fats />} />
             <Route path="/nutrients/vitamins" element={<Vitamins />} />
+            <Route path="/login" element={<Login />} />
         </Routes>
       </BrowserRouter>
     );
