@@ -70,3 +70,29 @@ export const vitamins_desc = `Vitamins are organic compounds that contain carbon
                             usually makes vitamin supplements unnecessary. In fact, when taken in large
                             doses, vitamin supplements (especially those containing vitamins A, D, B6,
                             or niacin) can be harmful.`
+
+export const minerals_desc = `Minerals are inorganic elements necessary to maintain normal physiological functions and health of the human body. 
+                            They play a wide range of key roles in the body, such as the Components of bones and teeth: Calcium, 
+                            phosphorus and magnesium are the main minerals that make up bones and teeth. They are important for maintaining bones and teeth. 
+                            Bone health and development are vital. Electrolyte minerals such as sodium, potassium, 
+                            and chloride help regulate body water balance and intracellular and intracellular ion balance, which are essential for maintaining blood pressure and muscle function. 
+                            Many minerals, such as zinc, copper, iron, manganese, selenium, etc., 
+                            are components or cofactors of enzymes and are essential for enzyme activity and promoting various biochemical reactions. 
+                            Iron is a component of hemoglobin and is responsible for transporting oxygen from the blood to various parts of the body. 
+                            Minerals such as calcium, potassium, and magnesium are essential for the conduction of nerve signals and muscle contraction, 
+                            including the proper functioning of the heart muscle. Minerals like zinc and selenium are important for maintaining normal immune system function and fighting disease. 
+                            For example, iodine is an essential element for thyroid hormone synthesis and is critical for regulating metabolism, growth, and development. 
+                            Certain minerals are involved in regulating the pH value in the body and help maintain acid-base balance. 
+                            The impact of minerals on human health is comprehensive and multifaceted. Deficiency or excessive intake of certain minerals may lead to health problems. 
+                            It is important to maintain a balanced diet and make sure you are getting enough minerals from a variety of foods.`
+
+export const water_desc = `Water plays a variety of vital roles in the human body. Water is the main component of the body, 
+                            accounting for approximately 60% of an adult's body weight. It helps maintain normal circulation and balance of blood, 
+                            saliva, and other body fluids. Through sweating and breathing, water participates in body temperature regulation, 
+                            helping the body dissipate heat when the heat is too high and maintaining a stable body temperature. Water acts as a solvent in the blood, 
+                            helping to transport nutrients, oxygen, and hormones to various parts of the body. Water participates in the digestive process, 
+                            helping to break down food so the body can absorb nutrients, while also facilitating the passage of food debris through the intestines. 
+                            Water is the main way to remove waste from the body through urine, sweat and stool, helping to remove toxins from the body. 
+                            Water provides lubrication to joints and soft tissues, helping to reduce friction and keep joints flexible. Adequate hydration keeps skin moist, 
+                            elastic and healthy-looking. Water participates in chemical reactions within cells, is part of the cell's structure, and is vital to the cell's survival and function. 
+                            Maintaining proper fluid intake is very important to maintain health and promote the proper functioning of various body systems.`
