@@ -82,7 +82,39 @@ class Nutrients extends Component{
                                 </div>
                             </Link>    
                         </div>
-                    </div>
+                    <div className="fl w-100 w-third-ns pa2 mt2">
+                            <Link to="/nutrients/minerals" style={{textDecoration: "none"}}>
+                                <div className="card bg-light-purple">
+                                    <div className="flex">
+                                        <div className="w-80 pa3">
+                                            <p className="black">
+                                            Minerals are inorganic elements necessary to maintain normal physiological functions and health of the human body. 
+                                            They play a wide range of key roles in the body, such as the Components of bones and teeth: Calcium, 
+                                            phosphorus and magnesium are the main minerals that make up bones and teeth.  
+                                            </p>
+                                        </div>
+                                        <div className="card-title black">minerals</div>
+                                    </div>
+                                </div>
+                            </Link>    
+                        </div>
+                        <div className="fl w-100 w-third-ns pa2 mt2">
+                            <Link to="/nutrients/water" style={{textDecoration: "none"}}>
+                                <div className="card bg-light-white">
+                                    <div className="flex">
+                                        <div className="w-80 pa3">
+                                            <p className="black">
+                                            Water plays a variety of vital roles in the human body. Water is the main component of the body, 
+                                             accounting for approximately 60% of an adult's body weight. It helps maintain normal circulation and balance of blood, 
+                                            saliva, and other body fluids.   
+                                            </p>
+                                        </div>
+                                        <div className="card-title black">water</div>
+                                    </div>
+                                </div>
+                            </Link>    
+                        </div>
+                        </div>
                 </div>
            </div>
            
