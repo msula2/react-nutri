@@ -11,7 +11,7 @@ function Register() {
     const navigate = useNavigate();
 
     const registerUser = () => {
-        fetch("http://localhost:3001/register", {
+        fetch("https://node-nutri.onrender.com/register", {
             method: 'post',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

@@ -22,7 +22,7 @@ class Login extends Component{
     }
 
     loginUser = () => {
-        fetch("http://localhost:3001/login", {
+        fetch("https://node-nutri.onrender.com/login", {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
