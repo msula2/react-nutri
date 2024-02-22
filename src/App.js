@@ -11,6 +11,7 @@ import Login from './components/login/Login';
 import Dashboard from "./components/dashboard/Dashboard";
 import Minerals from './components/nutrients/minerals/Minerals';
 import Water from './components/nutrients/water/Water';
+import Register from './components/register/Register';
 
 class App extends Component {
   constructor(){
@@ -36,6 +37,7 @@ class App extends Component {
         <Routes>
             <Route path="/" element={<Dashboard user={this.state.user} loggedIn={this.state.loggedIn}/>} />
             <Route path="/login" element={<Login setUser={this.setUserDetails}/>} />
+            <Route path="/register" element={<Register setUserDetails={this.setUserDetails} />} />
             <Route path="/nutrients" element={<Nutrients />} />
             <Route path="/nutrients/carbohydrates" element={<Carbohydrates />} />
             <Route path="/nutrients/protiens" element={<Protiens />} />
