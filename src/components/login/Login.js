@@ -22,7 +22,8 @@ class Login extends Component{
     }
 
     loginUser = () => {
-        fetch("https://node-nutri.onrender.com/login", {
+        //fetch(`${process.env.TEST ? process.env.DEV_URL : process.env.DEPLOYED_URL}/login`, {
+        fetch("http://localhost:3001/login", {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
