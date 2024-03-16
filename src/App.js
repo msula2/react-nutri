@@ -24,6 +24,28 @@ class App extends Component {
       },
       loggedIn : false
     }
+    fetch("http://localhost:3001/user", {
+      method: 'get',
+      headers: {'Content-Type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.result == "logged in"){
+        this.setUserDetails(data.username, data.id);
+        this.setState({loggedIn: true});
+      }
+      else if (data.result == "logged out"){
+        this.state = {
+          user : {
+            name: '',
+            id: ''
+          },
+          loggedIn : false
+        }
+      } else{
+        console.log(data.error);
+      }
+    })
   }
 
   setUserDetails = (name, id) => {

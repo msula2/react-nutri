@@ -49,9 +49,10 @@ class Login extends Component{
      * Logs in the user.
      */
     loginUser = () => {
-        fetch("https://node-nutri.onrender.com/login", {
+        fetch("http://localhost:3001/login", {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
+            credentials: 'include',
             body: JSON.stringify({
                 username: this.state.username,
                 password: this.state.password
