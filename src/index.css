@@ -33,6 +33,14 @@ body {
   padding-left: 2rem;
   align-items: center;
   display: flex;
+  flex-direction: column;
+}
+
+.field-row{
+  width: 100%;
+  margin-top: 25px;
+  display: flex;
+  align-items: center;
 }
 
 .field-label{
@@ -43,6 +51,8 @@ body {
 
 .field-value{
   width: 70%;
+  display: flex;
+  align-items: center;
 }
 
 .field-input{
@@ -56,6 +66,7 @@ body {
   border-width: 1px;
 }
 
+
 .card-tools{
   display: flex;
   justify-content: flex-end;
@@ -63,6 +74,11 @@ body {
 
 .btn-submit:hover{
   background-color: #1ddb43;
+}
+
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-submit{
@@ -77,6 +93,16 @@ body {
   border: none;
   display: inline-block;
   margin: 1rem;
+}
+
+.err{
+  margin-left: 12px;
+  
+}
+
+.error-icon{
+  color: rgb(219, 30, 30);
+  font-size: 18px;
 }
 
 
