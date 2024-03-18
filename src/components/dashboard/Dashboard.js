@@ -6,7 +6,7 @@ const Dashboard = ({ user, loggedIn }) => {
     const [logged, setLogged] = useState([]);
 
     const getUsers = () => {
-        fetch("http://localhost:3001/user", {
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}user`, {
             method: 'get',
             credentials: 'include'
         })

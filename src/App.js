@@ -14,6 +14,8 @@ import Water from './components/nutrients/water/Water';
 import Register from './components/register/Register';
 import Docs from './components/docs/Docs';
 import Calories from './components/calories/Calories';
+import Recipes from './components/recipes/Recipes';
+import { components } from 'react-select';
 
 class App extends Component {
   constructor(){
@@ -25,7 +27,7 @@ class App extends Component {
       },
       loggedIn : false
     }
-    fetch("http://localhost:3001/user", {
+    fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}user`, {
       method: 'get',
       headers: {'Content-Type': 'application/json'}
     })
@@ -71,6 +73,7 @@ class App extends Component {
             <Route path="/nutrients/water" element={<Water />} />
             <Route path="/docs" element={<Docs />} />
             <Route path="/calories" element={<Calories />} />
+            <Route path="/recipes" element={<Recipes />} />
         </Routes>
       </BrowserRouter>
     );

@@ -49,7 +49,7 @@ class Login extends Component{
      * Logs in the user.
      */
     loginUser = () => {
-        fetch("http://localhost:3001/login", {
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}login`, {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
             credentials: 'include',
