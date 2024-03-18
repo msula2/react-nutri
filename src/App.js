@@ -12,6 +12,8 @@ import Dashboard from "./components/dashboard/Dashboard";
 import Minerals from './components/nutrients/minerals/Minerals';
 import Water from './components/nutrients/water/Water';
 import Register from './components/register/Register';
+import Docs from './components/docs/Docs';
+import Calories from './components/calories/Calories';
 
 class App extends Component {
   constructor(){
@@ -67,6 +69,8 @@ class App extends Component {
             <Route path="/nutrients/vitamins" element={<Vitamins />} />
             <Route path="/nutrients/minerals" element={<Minerals />} />
             <Route path="/nutrients/water" element={<Water />} />
+            <Route path="/docs" element={<Docs />} />
+            <Route path="/calories" element={<Calories />} />
         </Routes>
       </BrowserRouter>
     );

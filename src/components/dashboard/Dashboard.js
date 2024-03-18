@@ -1,38 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 
-const Dashboard = ({user, loggedIn}) => {
-    const {name, id} = {...user};
+const Dashboard = ({ user, loggedIn }) => {
+    const { name, id } = user;
+    const [logged, setLogged] = useState([]);
 
-    // logoutUser = () => {
-    //     fetch("https://node-nutri.onrender.com/logout", {
-    //         method: 'get',
-    //         //headers: {'Content-Type': 'application/json'},
-    //     })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         if (data.result == "success"){
-    //             this.props.setUser(data.data.username, data.data.id);
-    //             this.setState({loggedIn: false});
-    //         }
-    //         else{
-    //             console.log(data.error);
-    //         }
-    //     })
+    const getUsers = () => {
+        fetch("http://localhost:3001/user", {
+            method: 'get',
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(data => {
+            setLogged(data.result);
+        })
+        .catch(error => {
+            console.error('Error fetching users:', error);
+        });
+    }
 
-    // }
-
-    return(
+    return (
         <div>
-        {loggedIn ? <h1>Welcome {name} your id is {id}</h1> :
-            <Navigate to="/login" />
-        }
-            {/* <div className="">
-                <button onClick={this.logoutUser} className="b ph3 pv2 ba b--black bg-transparent grow pointer f6 dib">Sign out</button>
-            </div> */}
+            {loggedIn ? <h1>Welcome {name} your id is {id}</h1> :
+                <Navigate to="/login" />
+            }
+            <div className="">
+                <button onClick={getUsers} className="b ph3 pv2 ba b--black bg-transparent grow pointer f6 dib">Get Users</button>
+                <p>You are {logged}</p>
+            </div>
         </div>
-        
-
     );
 }
 

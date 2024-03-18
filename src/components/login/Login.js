@@ -2,8 +2,24 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 
+/**
+ * @typedef {Object} Props
+ * @property {Function} setUser Function to set user data
+ */
+
+/**
+ * Component for user login.
+ * @param {Props} props - The props passed to the component.
+ * @example
+ * <Login setUser={setUserFunction} />
+ * // Renders a login form allowing the user to log in.
+ */
 class Login extends Component{
 
+     /**
+     * Constructor for the Login component.
+     * @param {object} props - The props passed to the component.
+     */
     constructor(props){
         super(props);
         this.state = {
@@ -13,19 +29,30 @@ class Login extends Component{
         }
     }
 
+     /**
+     * Handles username change.
+     * @param {object} event - The event object.
+     */
     changeUsername = (event) =>{
         this.setState({username : event.target.value});
       }
     
+    /**
+     * Handles password change.
+     * @param {object} event - The event object.
+     */
     changePassword = (event) =>{
     this.setState({password : event.target.value});
     }
 
+    /**
+     * Logs in the user.
+     */
     loginUser = () => {
-        //fetch(`${process.env.TEST ? process.env.DEV_URL : process.env.DEPLOYED_URL}/login`, {
         fetch("http://localhost:3001/login", {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
+            credentials: 'include',
             body: JSON.stringify({
                 username: this.state.username,
                 password: this.state.password
@@ -43,6 +70,11 @@ class Login extends Component{
         })
 
     }
+
+    /**
+     * Renders the Login component.
+     * @returns {JSX.Element} JSX for the Login component.
+     */
     
     render(){
         return(
