@@ -6,110 +6,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import MealTable from './MealTable';
-
-const columns =  [
-    { Header: 'ID', accessor: 'id', disableSortBy: true },
-    { Header: 'Meal Name', accessor: 'mealName' },
-    { Header: 'Ingredients', accessor: 'ingredients', Cell: row => row.value.join(', ') },
-    { Header: 'Calories', accessor: 'calories', disableSortBy: true }
-]
-
-const tracking_options = [
-    { label: "Exchange Lists", value: "exchange" },
-    { label: "Brands", value: "brand" },
-];
-
-const food_groups = [
-    {label: "Starch/Bread", value: "starch"},
-    {label: "Meat", value: "meat"},
-    {label: "Vegetable", value: "vegetable"},
-    {label: "Fruit", value: "fruit"},
-    {label: "Milk", value: "milk"},
-    {label: "Fat", value: "fat"},
-
-]
-
-const starches = [
-    {label: "Cereals/Grains/Pasta", value: "cereals_grain_pasta_ss"},
-    {label: "Dried Beans/Peas/Lentils", value: "dried_beans_peas_lentils_ss"},
-    {label: "Starchy Vegetables", value: "starchy_vegetables_ss"},
-    {label: "Bread", value: "bread_ss"},
-    {label: "Crackers/Snacks", value: "crackers_snacks_ss"},
-    {label: "Starchy Foods Prepared with Fat", value: "starchy_foods_prepared_with_fat_ss"}
-];
-
-const starch_items = {
-    cereals_grain_pasta_ss: [
-        { label: "Bran cereals, concentrated", value: "bran_cereals_conc" },
-        { label: "Bran cereals, flaked", value: "bran_cereals_flaked" },
-        { label: "Bulgur (cooked)", value: "bulgur_cooked" },
-        { label: "Cooked cereals", value: "cooked_cereals" },
-        { label: "Cornmeal (dry)", value: "cornmeal_dry" },
-        { label: "Grape Nuts", value: "grape_nuts" },
-        { label: "Grits (cooked)", value: "grits_cooked" },
-        { label: "Other ready-to-eat, unsweetened (plain) cereals", value: "ready_to_eat_cereals" },
-        { label: "Pasta (cooked)", value: "pasta_cooked" },
-        { label: "Puffed cereal", value: "puffed_cereal" },
-        { label: "Rice, white or brown (cooked)", value: "rice_cooked" },
-        { label: "Shredded wheat", value: "shredded_wheat" },
-        { label: "Wheat germ", value: "wheat_germ" }
-    ],
-    dried_beans_peas_lentils_ss: [
-        { label: "Beans and peas (cooked)", value: "beans_and_peas_cooked" },
-        { label: "Lentils (cooked)", value: "lentils_cooked" },
-        { label: "Baked beans", value: "baked_beans" }
-    ],
-    starchy_vegetables_ss: [
-        { label: "Corn", value: "corn" },
-        { label: "Corn on the cob", value: "corn_on_the_cob" },
-        { label: "Lima beans", value: "lima_beans" },
-        { label: "Peas, green (canned or frozen)", value: "green_peas" },
-        { label: "Plantain", value: "plantain" },
-        { label: "Potato, baked", value: "baked_potato" },
-        { label: "Potato, mashed", value: "mashed_potato" },
-        { label: "Squash, winter (acorn, butternut)", value: "winter_squash" },
-        { label: "Yam, sweet potato", value: "sweet_potato" }
-    ],
-    bread_ss: [
-        { label: "Bagel", value: "bagel" },
-        { label: "Bread sticks, crisp", value: "crisp_bread_sticks" },
-        { label: "Croutons low fat", value: "low_fat_croutons" },
-        { label: "English muffin", value: "english_muffin" },
-        { label: "Frankfurter or hamburger bun", value: "bun" },
-        { label: "Pita", value: "pita" },
-        { label: "Plain roll, small", value: "plain_roll" },
-        { label: "Raisin, unfrosted", value: "raisin_bread" },
-        { label: "Rye, pumpernickel", value: "rye_bread" },
-        { label: "White, Wheat, Whole wheat", value: "whole_wheat_bread" }
-    ],
-    crackers_snacks_ss: [
-        { label: "Animal crackers", value: "animal_crackers" },
-        { label: "Graham crackers", value: "graham_crackers" },
-        { label: "Matzoh", value: "matzoh" },
-        { label: "Melba toast", value: "melba_toast" },
-        { label: "Oyster crackers", value: "oyster_crackers" },
-        { label: "Popcorn", value: "popcorn" },
-        { label: "Pretzels", value: "pretzels" },
-        { label: "Rye crisp", value: "rye_crisp" },
-        { label: "Saltine-type crackers", value: "saltine_crackers" },
-        { label: "Whole-wheat crackers, no fat added", value: "whole_wheat_crackers" },
-        { label: "Whole-wheat crackers, fat added", value: "whole_wheat_crackers_fat" }
-    ],
-    starchy_foods_prepared_with_fat_ss: [
-        { label: "Biscuit", value: "biscuit" },
-        { label: "Chow mein noodles", value: "chow_mein_noodles" },
-        { label: "Corn bread", value: "corn_bread" },
-        { label: "Cracker, round butter type", value: "butter_cracker" },
-        { label: "French-fried potatoes", value: "french_fried_potatoes" },
-        { label: "Muffin", value: "muffin" },
-        { label: "Pancake", value: "pancake" },
-        { label: "Stuffing, bread (prepared)", value: "bread_stuffing" },
-        { label: "Taco shell", value: "taco_shell" },
-        { label: "Waffle", value: "waffle" }
-    ]
-};
-
-
+import {columns, food_groups, tracking_options, starches, starch_items} from './calories_data.js';
 
 class Calories extends Component {
 
@@ -179,10 +76,6 @@ class Calories extends Component {
         this.setState({ingredients_for: selectedOption});
     }
 
-    addIngredient = () => {
-
-    }
-
 
     groupChange = (selectedOption) => {
         let group = selectedOption.value;
@@ -210,6 +103,28 @@ class Calories extends Component {
 
     ingredientChange = (selectedOption) => {
         this.setState({ ingredient: selectedOption});
+    }
+
+
+    addIngredient = () => {
+        const {ingredients_for, track_method, food_group, category, ingredient, data} = this.state
+        let newData = []
+
+        let calories = 0;
+        let new_ingredient = {id: data.length + 1, mealName: ingredients_for.label, ingredients: [ingredient.label], calories: 0};
+        if (food_group.value === "starch"){
+            new_ingredient.calories = 80;
+        }
+        
+        let meal_exists = data.filter((item) => item.mealName === ingredients_for.label);
+
+        if (meal_exists.length == 0){
+            let new_meal = new_ingredient;
+            newData = [...data, new_meal];
+        }
+
+        this.setState({data: newData});
+
     }
 
     render() {
