@@ -17,10 +17,8 @@ import {columns, food_groups, tracking_options, starches, starch_items} from './
  * @property {Object} state - The state of the component
  * @property {Object} state.track_method - Represents the tracking method for calories, defaulting to "Exchange Lists"
  * @property {string} state.meal_name - Represents the name of the meal, initially empty
- * @property {Array} state.meals - Represents the list of meals, initially empty
  * @property {Object} state.datetime - Represents the date and time, initialized to the current date and time
  * @property {Object} state.food_group - Represents the selected food group for ingredient selection, defaulting to "Starch/Bread"
- * @property {Object} state.ingredients_for - Represents the currently selected meal for adding ingredients, initially empty
  * @property {Object} state.category - Represents the selected category for ingredient selection, defaulting to "Cereals/Grains/Pasta"
  * @property {Array} state.categories - Represents the list of categories for the selected food group
  * @property {Object} state.ingredient - Represents the selected ingredient for adding to the meal, defaulting to "Bran cereals, concentrated"
@@ -28,7 +26,6 @@ import {columns, food_groups, tracking_options, starches, starch_items} from './
  * @property {Array} state.data - Represents the data for meals, initially containing example meal data
  * @property {Object} state.errors - Represents error messages related to meal name and ingredient addition
  * @property {string} state.errors.meal_name - Error message for meal name, initially empty
- * @property {string} state.errors.ingredients - Error message for adding ingredients, indicating that a meal must be added first
 
  * 
  * 
@@ -56,24 +53,24 @@ class Calories extends Component {
         this.state = {
             track_method: {label: "Exchange Lists", value: "exchange"},
             meal_name: '',
-            meals: [
-            ],
             datetime: dayjs(),
             food_group: {label: "Starch/Bread", value: "starch"},
-            ingredients_for: {},
             category: {label: "Cereals/Grains/Pasta", value: "cereals_grain_pasta_ss"},
             categories: starches,
-            ingredient: { label: "Bran cereals, concentrated", value: "bran_cereals_conc" },
+            ingredients_chosen: [],
             ingredients: starch_items.cereals_grain_pasta_ss,
             data: [
-                { id: 1, mealName: 'Breakfast', ingredients: ['Eggs', 'Toast', 'Orange Juice'], calories: 350 },
-                { id: 2, mealName: 'Lunch', ingredients: ['Sandwich', 'Salad', 'Apple'], calories: 450 },
-                { id: 3, mealName: 'Dinner', ingredients: ['Chicken', 'Rice', 'Broccoli'], calories: 550 }
+                // { id: 1, mealName: 'Breakfast', ingredients: ['Eggs', 'Toast', 'Orange Juice'], calories: 350 },
+                // { id: 2, mealName: 'Lunch', ingredients: ['Sandwich', 'Salad', 'Apple'], calories: 450 },
+                // { id: 3, mealName: 'Dinner', ingredients: ['Chicken', 'Rice', 'Broccoli'], calories: 550 }
             ],
-
+            dirty: {
+                meal_name: false,
+                ingredients_chosen: false
+            },
             errors: {
                 meal_name: '',
-                ingredients: 'A meal must be added first.'
+                ingredients_chosen: ''
             }
         };
     }
@@ -105,10 +102,14 @@ class Calories extends Component {
     nameChange = (event) => {
         const { value } = event.target;
         let errors = { ...this.state.errors };
+        let dirty = {...this.state.dirty};
+
+        dirty.meal_name = true;
 
         errors.meal_name = value.trim() === '' ? 'Meal name is required.' : '';
 
-        this.setState({ meal_name: value, errors });
+
+        this.setState({ meal_name: value, errors, dirty});
     }
 
     /**
@@ -125,49 +126,6 @@ class Calories extends Component {
      */
     dateChange = (dateTime) => {
         this.setState({datetime: dateTime})
-    }
-    /**
-     * Adds a meal to the list of meals for which calories can be calculated.
-     * 
-     * @summary This method takes no parameters. It adds a new meal to the list of meals with the provided meal name.
-     * 
-     * @instance
-     * @memberOf Calories
-     * @method dateChange 
-    */
-    addMeal = () => {
-        const { meal_name, errors } = this.state;
-
-        if (errors.meal_name) {
-            return; 
-        }
-
-        let meals_ = this.state.meals;
-        let new_meal = { label: meal_name, value: meal_name.toLowerCase() };
-        meals_.push(new_meal);
-
-        errors.ingredients = '';
-
-        this.setState({ meals: meals_, meal_name: '', ingredients_for: new_meal, errors });
-    }
-
-    /**
-     * Updates the selected meal for adding ingredients by setting the 'ingredients_for' state.
-     *  
-     * @summary This method takes an onChange event and updates the selected meal for adding ingredients.
-     *
-     * @instance
-     * @memberOf Calories
-     * @method mealChange
-     *  
-     * @param {Object} selectedOption - The selected option representing the meal.
-     * @param {string} selectedOption.label - The label of the selected meal option.
-     * @param {string} selectedOption.value - The value of the selected meal option.
-     */
-    mealChange = (selectedOption) => {
-        const { meals, errors } = this.state;
-        
-        this.setState({ingredients_for: selectedOption});
     }
 
     /**
@@ -210,12 +168,13 @@ class Calories extends Component {
      */
     categoryChange = (selectedOption) => {
         let category = selectedOption.value;
-        let ingredients = starch_items.category;
+        let ingredients = starch_items[category];
 
         if (category.endsWith("_ss")){
             ingredients = starch_items[category];
         }
-        this.setState({ category: selectedOption, ingredients: ingredients, ingredient: ingredients[0]});
+
+        this.setState({ category: selectedOption, ingredients: ingredients});
 
     }
     
@@ -226,14 +185,22 @@ class Calories extends Component {
      * 
      * @instance
      * @memberOf Calories
-     * @method mealChange
+     * @method ingredientsChange
      *
      * @param {Object} selectedOption - The selected option representing the ingredient.
      * @param {string} selectedOption.label - The label of the selected ingredient option.
      * @param {string} selectedOption.value - The value of the selected ingredient option.
      */
-    ingredientChange = (selectedOption) => {
-        this.setState({ ingredient: selectedOption});
+    ingredientsChange = (selectedOption) => {
+        let errors = {...this.state.errors}
+        
+        errors.ingredients_chosen = selectedOption.length == 0 ? 'Atleast one ingredient needs to be part of meal.' : '';
+
+        let dirty = {...this.state.dirty};
+
+        dirty.ingredients_chosen = true;
+
+        this.setState({ ingredients_chosen: selectedOption, errors, dirty});
     }
 
     /**
@@ -244,39 +211,58 @@ class Calories extends Component {
      * 
      * @instance
      * @memberOf Calories
-     * @method mealChange
+     * @method addMeal
      */
-    addIngredient = () => {
-        const { ingredients_for, track_method, food_group, category, ingredient, data } = this.state;
+    addMeal = () => {
+        const { meal_name, track_method, food_group, category, ingredients_chosen, data } = this.state;
         let newData = [];
 
         // Initialize calories
         let calories = 0;
 
         // Create a new ingredient object
-        let new_ingredient = {
+        let new_meal = {
             id: data.length + 1,
-            mealName: ingredients_for.label,
-            ingredients: [ingredient.label],
-            calories: 0
+            mealName: meal_name,
+            ingredients: [ingredients_chosen.map(item => item.label)],
+            calories: 0,
+            breakdown: [
+                { name: 'Protein', value: 30 },
+                { name: 'Carbohydrates', value: 200 },
+                { name: 'Fat', value: 120 }
+              ]
         };
+
 
         // Calculate calories based on the selected food group
         if (food_group.value === "starch") {
-            new_ingredient.calories = 80;
+            new_meal.calories = 80;
         }
 
         // Check if the meal already exists in the data
-        let meal_exists = data.filter((item) => item.mealName === ingredients_for.label);
+        let meal_exists = data.filter((item) => item.mealName === meal_name);
 
         // If meal does not exist, create a new meal with the new ingredient
         if (meal_exists.length === 0) {
-            let new_meal = new_ingredient;
             newData = [...data, new_meal];
         }
 
         // Update the state with the new meal data
         this.setState({ data: newData });
+    }
+
+
+    addEnabled = () => {
+        let errors = {...this.state.errors};
+        let dirty = {...this.state.dirty};
+        let error_msgs = Object.values(errors).filter(item => item !== '');
+        let all_dirty = Object.values(dirty).every(item => item == true);
+        if (all_dirty && error_msgs.length == 0){
+            return false;
+        }
+        else{
+            return true;
+        }
     }
 
     /**
@@ -294,7 +280,7 @@ class Calories extends Component {
 
 
     render() {
-        const {meal_name, datetime, meals, track_method, ingredients_for, food_group, category, categories, ingredient, ingredients, data,  errors } = this.state;
+        const {meal_name, datetime, meals, track_method, food_group, category, categories, ingredient, ingredients, data,  errors, add_enabled } = this.state;
 
         return (
             <div className="mt4">
@@ -320,7 +306,6 @@ class Calories extends Component {
                                             </a>
                                             <Tooltip id="meal_name_err" />
                                         </div>
-                                        
                                     }
                                     
                                 </div>
@@ -338,39 +323,6 @@ class Calories extends Component {
                                     />
                                 </LocalizationProvider>                             
                                 </div>
-                            </div>
-                            <div className="card-tools" style={{marginLeft: "auto"}}>
-                                <button
-                                    className="btn-submit mr0"
-                                    onClick={this.addMeal}
-                                    disabled={!!errors.meal_name}
-                                >
-                                <i className="fa-solid fa-plus"></i> Add
-                                </button>
-                            </div>
-                            <div className="field-row">
-                                <div className="field-label">
-                                    <label>For Meal</label>
-                                </div>
-                                <div className="field-value">
-                                    <Select
-                                        value={ingredients_for}
-                                        onChange={this.mealChange}
-                                        options={meals}
-                                        className="w-80"
-                                    />
-                                    {errors.ingredients && 
-                                    <div className="err" >
-                                        <a data-tooltip-id="ingredients_err" data-tooltip-content={errors.ingredients}>
-                                            <i className="fa-solid fa-circle-exclamation error-icon"></i>
-                                        </a>
-                                        <Tooltip id="ingredients_err" />
-                                    </div>
-                                        
-                                    }
-                                </div>
-                                
-
                             </div>
                             <div className="field-row">
                                 <div className="field-label">
@@ -419,12 +371,24 @@ class Calories extends Component {
                                     </div>
                                     <div className="field-value">
                                         <Select
-                                            value={ingredient}
-                                            onChange={this.ingredientChange}
+                                            isMulti
+                                            name="ingredients"
+                                            onChange={this.ingredientsChange}
                                             options={ingredients}
-                                            className="w-80"
+                                            className="basic-multi-select, w-80"
+                                            classNamePrefix="select"
+                                            
                                         />
+                                        {errors.ingredients_chosen && 
+                                            <div className="err" >
+                                                <a data-tooltip-id="ingredients_chosen_err" data-tooltip-content={errors.ingredients_chosen}>
+                                                    <i className="fa-solid fa-circle-exclamation error-icon"></i>
+                                                </a>
+                                                <Tooltip id="ingredients_chosen_err" />
+                                            </div>
+                                        }
                                     </div>
+                                    
                                 </div>
                             </div>
                             
@@ -434,9 +398,9 @@ class Calories extends Component {
                         </div>
                         <div className="card-tools">
                             <button 
-                                disabled={!!errors.ingredients}
-                                className="btn-submit" 
-                                onClick={this.addIngredient}><i className="fa-solid fa-plus"></i> Add
+                                className="btn-submit"
+                                disabled={this.addEnabled()}
+                                onClick={this.addMeal}><i className="fa-solid fa-plus"></i> Add
                             </button>
                         </div>
                     </div>
