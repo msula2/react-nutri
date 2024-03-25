@@ -4,8 +4,12 @@ import { Tooltip } from 'react-tooltip'
 import Title from '../title/Title';
 import About from '../about/About';
 import recipes_logo from "../../assets/imgs/recipes.png"
+import Popup from 'reactjs-popup';
 
+import 'reactjs-popup/dist/index.css';
 import "./Recipes.css";
+
+
 
 class Recipes extends Component{
 
@@ -19,6 +23,12 @@ class Recipes extends Component{
                 ingredients: '',
                 instructions: ''
             },
+            //new_recipe_data: {
+                title: '',
+                description: '',
+                ingredients: '',
+                instructions: '',
+            //},
             errors: {
                 recipe_title: '',
                 ingredients: 'A meal must be added first.'
@@ -26,17 +36,65 @@ class Recipes extends Component{
         };
     }
 
+    titleChange = (event) => {
+        const { value } = event.target;
+        this.setState({ title: value});
+    }
+
+    descriptionChange = (event) => {
+        const { value } = event.target;
+        this.setState({ description: value});
+    }
+
+    ingredientsChange = (event) => {
+        const { value } = event.target;
+        this.setState({ ingredients: value});
+    }
+
+    instructionsChange = (event) => {
+        const { value } = event.target;
+        this.setState({ instructions: value});
+    }
+
+    submitNewRecipe = () => {
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}recipe`, {
+            method: 'post',
+            //query: 'title=Salad'
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include',
+            body: JSON.stringify({
+                title: this.state.title,
+                description: this.state.description,
+                ingredients: this.state.ingredients,
+                instructions: this.state.instructions
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result === "success"){
+                console.log("Recipe added successfully")
+            } else{
+                console.log("Error occurred while adding recipe");
+            }
+        })
+        .catch(error => {
+            console.error('Error occurred while adding recipe:', error);
+        });
+        this.setState({title: '', description: '', ingredients: '', instructions: ''})
+    }
+    
+
     nameChange = (event) => {
         const { value } = event.target;
         let errors = { ...this.state.errors };
 
         errors.recipe_title = value.trim() === '' ? 'Recipe title is required.' : '';
 
-        if(value.trim() != ''){
-            fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}recipes`, {
+        if(value.trim() !== ''){
+            fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}recipe?title=${value}`, {
                 method: 'get',
                 //query: 'title=Salad'
-                //headers: {'Content-Type': 'application/json'},
+                headers: {'Content-Type': 'application/json'},
                 credentials: 'include'
                 // body: JSON.stringify({
                 //     title: value
@@ -44,9 +102,16 @@ class Recipes extends Component{
             })
             .then(response => response.json())
             .then(data => {
-                if (data.result == "success"){
+                if (data.result === "success"){
                     this.setState({recipe_data: data.data});
-                    console.log(this.state.recipe_data.title)
+                    console.log(this.state.recipe_data)
+                } else{
+                    this.setState({recipe_data: {
+                        title: '',
+                        description: '',
+                        ingredients: '',
+                        instructions: ''
+                    }});
                 }
             })
             .catch(error => {
@@ -58,7 +123,139 @@ class Recipes extends Component{
     }
 
     render(){
-        const {recipe_title, errors } = this.state;
+        const {title, description, ingredients, instructions, recipe_data, recipe_title, errors } = this.state;
+        
+        const PopupExample = () => (
+            <Popup trigger={<button className="button"> Add Recipe </button>} modal nested>
+                {close => (
+                    <div className="modal">
+                        <button className="close" onClick={close}>
+                            &times;
+                        </button>
+                        <div className="header"> Add Recipe </div>
+                        <div className="content">
+                            <div className="field-row">
+                                <div className="field-label">
+                                    <label>Recipe Title</label>
+                                </div>
+                                <div className="field-value">
+                                    <input
+                                        className="field-input"
+                                        type="text"
+                                        value={title}
+                                        onChange={this.titleChange}
+                                    />
+                                    {errors.meal_name && 
+                                        <div className="err" >
+                                            <a data-tooltip-id="meal_name_err" data-tooltip-content={errors.meal_name}>
+                                                <i className="fa-solid fa-circle-exclamation error-icon"></i>
+                                            </a>
+                                            <Tooltip id="meal_name_err" />
+                                        </div>
+                                        
+                                    }
+                                    
+                                </div>
+                            </div>
+                            
+                            <div className="field-row">
+                                <div className="field-label">
+                                    <label>Description</label>
+                                </div>
+                                <div className="field-value">
+                                    <input
+                                        className="field-input"
+                                        type="text"
+                                        value={description}
+                                        onChange={this.descriptionChange}
+                                    />
+                                    {errors.meal_name && 
+                                        <div className="err" >
+                                            <a data-tooltip-id="meal_name_err" data-tooltip-content={errors.meal_name}>
+                                                <i className="fa-solid fa-circle-exclamation error-icon"></i>
+                                            </a>
+                                            <Tooltip id="meal_name_err" />
+                                        </div>
+                                        
+                                    }
+                                    
+                                </div>
+                            </div>
+                            
+                            <div className="field-row">
+                                <div className="field-label">
+                                    <label>Ingredients</label>
+                                </div>
+                                <div className="field-value">
+                                    <input
+                                        className="field-input"
+                                        type="text"
+                                        value={ingredients}
+                                        onChange={this.ingredientsChange}
+                                    />
+                                    {errors.meal_name && 
+                                        <div className="err" >
+                                            <a data-tooltip-id="meal_name_err" data-tooltip-content={errors.meal_name}>
+                                                <i className="fa-solid fa-circle-exclamation error-icon"></i>
+                                            </a>
+                                            <Tooltip id="meal_name_err" />
+                                        </div>
+                                        
+                                    }
+                                    
+                                </div>
+                            </div>
+
+                            <div className="field-row">
+                                <div className="field-label">
+                                    <label>Instructions</label>
+                                </div>
+                                <div className="field-value">
+                                    <input
+                                        className="field-input"
+                                        type="text"
+                                        value={instructions}
+                                        onChange={this.instructionsChange}
+                                    />
+                                    {errors.meal_name && 
+                                        <div className="err" >
+                                            <a data-tooltip-id="meal_name_err" data-tooltip-content={errors.meal_name}>
+                                                <i className="fa-solid fa-circle-exclamation error-icon"></i>
+                                            </a>
+                                            <Tooltip id="meal_name_err" />
+                                        </div>
+                                        
+                                    }
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        <div className="actions">
+                            <button
+                                className="button"
+                                onClick={() => {
+                                    console.log('modal closed ');
+                                    this.submitNewRecipe();
+                                    close();
+                                }}
+                            >
+                                Submit
+                            </button>
+                            <button
+                                className="button"
+                                onClick={() => {
+                                    console.log('modal closed ');
+                                    close();
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </Popup>
+        );
+
         return (   
            <div>
                 <Title text={`Recipes`} />
@@ -81,117 +278,39 @@ class Recipes extends Component{
                                     </a>
                                     <Tooltip id="recipe_title_err" />
                                 </div>
-                                
                             }
-                            
                         </div>
-                        <About text={""} image={recipes_logo} />
+                        <PopupExample />
+                        <About image={recipes_logo} />
                     </div>
                 </div>
 
                 
                 <div className="mw9 ph3-ns mt4">
                     <div className="cf ph2-ns">
-                        <div className="fl w-100 w-third-ns pa2 mt2">
-                            <Link to="/nutrients/carbohydrates" style={{textDecoration: "none"}}>
+                        <div className="fl w-70 pa2 mt2">
+                            {/*<Link to="/nutrients/carbohydrates" style={{textDecoration: "none"}}>*/}
                                 <div className="card bg-light-yellow">
                                     <div className="flex">
                                         <div className="w-80 pa3">
                                             <p className="black">
-                                                Carbohydrates are one of the three macronutrients essential for human health, 
-                                                alongside proteins and fats. They serve as the primary source of energy for 
-                                                the body and play a crucial role in various physiological functions.
+                                                <br /> {recipe_data.description === "" ? recipe_title === "" ? "" : `No Recipe Found for ${recipe_title}` : "Description: "} <br />
+                                                {recipe_data.description}
+                                                <br />
+                                                <br /> {recipe_data.ingredients === "" ? "" : "Ingredients: "} <br />
+                                                {recipe_data.ingredients}
+                                                <br />
+                                                <br /> {recipe_data.instructions === "" ? "" : "Instructions: "} <br />
+                                                {recipe_data.instructions}
+                                                <br />
                                             </p>
                                         </div>
-                                        <div className="card-title black">Carbohydrates</div>
+                                        <div className="title black">{recipe_data.title}</div>
                                     </div>
                                 </div>
-                            </Link>    
+                            {/*</Link>    */}
                         </div>
-                        <div className="fl w-100 w-third-ns pa2 mt2">
-                            <Link to="/nutrients/protiens" style={{textDecoration: "none"}}>
-                                <div className="card bg-light-red">
-                                    <div className="flex">
-                                        <div className="w-80 pa3">
-                                            <p className="black">
-                                            Proteins are one of the three macronutrients essential for human health, alongside 
-                                            carbohydrates and fats. They serve as the building blocks of tissues, muscles, organs, 
-                                            enzymes, hormones, and various other molecules in the body. 
-                                            </p>
-                                        </div>
-                                        <div className="card-title black">Protiens</div>
-                                    </div>
-                                </div>
-                            </Link>    
-                        </div>
-                        <div className="fl w-100 w-third-ns pa2 mt2">
-                            <Link to="/nutrients/fats" style={{textDecoration: "none"}}>
-                                <div className="card bg-light-blue">
-                                    <div className="flex">
-                                        <div className="w-80 pa3">
-                                            <p className="black">
-                                            Fats are essential macronutrients crucial for energy provision, insulation of 
-                                            body tissues, and transportation of fat-soluble vitamins. They also play 
-                                            pivotal roles in the structural integrity and functionality of cell membranes.
-                                            </p>
-                                        </div>
-                                        <div className="card-title black">Fats/Lipids</div>
-                                    </div>
-                                </div>
-                            </Link>    
-                        </div>
-                    </div>
-                    <div className="cf ph2-ns">
-                        <div className="fl w-100 w-third-ns pa2 mt2">
-                            <Link to="/nutrients/vitamins" style={{textDecoration: "none"}}>
-                                <div className="card bg-light-green">
-                                    <div className="flex">
-                                        <div className="w-80 pa3">
-                                            <p className="black">
-                                            Vitamins are micronutrients that are essential for various metabolic processes 
-                                            in the body. They play crucial roles in growth, immunity, and overall health. 
-                                            Vitamins are typically categorized as water-soluble (e.g., vitamin C, B-complex vitamins) 
-                                            or fat-soluble (e.g., vitamins A, D, E, K).
-                                            </p>
-                                        </div>
-                                        <div className="card-title black">Vitamins</div>
-                                    </div>
-                                </div>
-                            </Link>    
-                        </div>
-                    <div className="fl w-100 w-third-ns pa2 mt2">
-                            <Link to="/nutrients/minerals" style={{textDecoration: "none"}}>
-                                <div className="card bg-light-purple">
-                                    <div className="flex">
-                                        <div className="w-80 pa3">
-                                            <p className="black">
-                                            Minerals are inorganic elements necessary to maintain normal physiological functions and health of the human body. 
-                                            They play a wide range of key roles in the body, such as the Components of bones and teeth: Calcium, 
-                                            phosphorus and magnesium are the main minerals that make up bones and teeth.  
-                                            </p>
-                                        </div>
-                                        <div className="card-title black">minerals</div>
-                                    </div>
-                                </div>
-                            </Link>    
-                        </div>
-                        <div className="fl w-100 w-third-ns pa2 mt2">
-                            <Link to="/nutrients/water" style={{textDecoration: "none"}}>
-                                <div className="card bg-light-white">
-                                    <div className="flex">
-                                        <div className="w-80 pa3">
-                                            <p className="black">
-                                            Water plays a variety of vital roles in the human body. Water is the main component of the body, 
-                                             accounting for approximately 60% of an adult's body weight. It helps maintain normal circulation and balance of blood, 
-                                            saliva, and other body fluids.   
-                                            </p>
-                                        </div>
-                                        <div className="card-title black">water</div>
-                                    </div>
-                                </div>
-                            </Link>    
-                        </div>
-                        </div>
+                    </div>                    
                 </div>
            </div>
            
