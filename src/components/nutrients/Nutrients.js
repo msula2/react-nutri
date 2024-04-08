@@ -7,7 +7,18 @@ import nutrients_logo from "../../assets/imgs/nutrients.png"
 
 import "./Nutrients.css";
 
-class Nutrients extends Component{
+/**
+ * Summary of the six elements carbohydrates, proteins, fats, vitamins, minerals, and water.
+ * This component uses cards to introduce each nutritional element
+ * 
+ * @extends Component
+ */
+ class Nutrients extends Component{
+    /**
+     * Perform various renderings of cards
+     * 
+     * @returns {JSX.Element} The rendered component.
+     */
     render(){
         return (   
            <div>

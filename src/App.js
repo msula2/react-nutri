@@ -14,8 +14,9 @@ import Water from './components/nutrients/water/Water';
 import Register from './components/register/Register';
 import Docs from './components/docs/Docs';
 import Calories from './components/calories/Calories';
+import HealthTips from './components/healthtips/HealthTips';
 
-class App extends Component {
+ class App extends Component {ß
   constructor(){
     super();
     this.state = {
@@ -71,6 +72,7 @@ class App extends Component {
             <Route path="/nutrients/water" element={<Water />} />
             <Route path="/docs" element={<Docs />} />
             <Route path="/calories" element={<Calories />} />
+            <Route path="/health-tips" element={<HealthTips />} />
         </Routes>
       </BrowserRouter>
     );

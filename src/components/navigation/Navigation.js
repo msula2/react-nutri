@@ -2,18 +2,43 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import nutrients from '../../assets/imgs/nutrients.png';
 import calories from '../../assets/imgs/calories.png';
+import healthTips from '../../assets/imgs/healthtips.png';
 import './Navigation.css';
 
-class Navigation extends Component{
+/**
+   * Navigation component at the top of the program.
+   * Includes links to main parts of the application.
+   *
+   * @extends component
+   */
+
+ class Navigation extends Component{
+    /**
+       * Initialize the navigation component.
+       * 
+       * @constructor
+       */
     constructor(){
         super();
         this.state = {
-            active: false
-        }
+            active: false 
+        };
     }
-    tabActive = () =>{
-        this.setState({active: !this.state.active})
+
+    /**
+     * Toggles the active state of navigation items.
+     * 
+     * @method
+     */
+    tabActive = () => {
+        this.setState({active: !this.state.active});
     }
+
+    /**
+     * Presents a navigation bar with links to various parts of the application.
+     * 
+     * @returns {JSX.Element} The navigation bar component.
+     */
     render(){
         return (
             <nav className="bg-white-90 w-100 bb">
@@ -33,6 +58,13 @@ class Navigation extends Component{
                                     </li>
                                     <img src={calories} className="dib mw2"></img>
                                 </div>
+                                <div style={{float: "right"}} className={`flex items-center bl pr3 ${this.state.active ? "bg-black-90" : "bg-white-90"}`}>
+                                    <li className="dib mr3 pa3">
+                                        <Link className={this.state.active ? "white" : "black"} to="/health-tips" onClick={this.tabActive}>Health-Tips</Link>
+                                    </li>
+                                    <img src={healthTips} className="dib mw2"></img>
+                                </div>
+
                             </div>
                             
                     </div>
