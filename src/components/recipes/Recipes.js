@@ -82,7 +82,57 @@ class Recipes extends Component{
         });
         this.setState({title: '', description: '', ingredients: '', instructions: ''})
     }
+
+    submitDeleteRecipe = () => {
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}recipe`, {
+            method: 'delete',
+            //query: 'title=Salad'
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include',
+            body: JSON.stringify({
+                title: this.state.title
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result === "success"){
+                console.log("Recipe deleted successfully")
+            } else{
+                console.log("Error occurred while deleting recipe");
+            }
+        })
+        .catch(error => {
+            console.error('Error occurred while deleting recipe:', error);
+        });
+        this.setState({title: '', description: '', ingredients: '', instructions: ''})
+    }
     
+    submitEditRecipe = () => {
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}recipe`, {
+            method: 'put',
+            //query: 'title=Salad'
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include',
+            body: JSON.stringify({
+                title: this.state.title,
+                description: this.state.description,
+                ingredients: this.state.ingredients,
+                instructions: this.state.instructions
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result === "success"){
+                console.log("Recipe edited successfully")
+            } else{
+                console.log("Error occurred while editing recipe");
+            }
+        })
+        .catch(error => {
+            console.error('Error occurred while edditing recipe:', error);
+        });
+        this.setState({title: '', description: '', ingredients: '', instructions: ''})
+    }
 
     nameChange = (event) => {
         const { value } = event.target;
@@ -125,7 +175,7 @@ class Recipes extends Component{
     render(){
         const {title, description, ingredients, instructions, recipe_data, recipe_title, errors } = this.state;
         
-        const PopupExample = () => (
+        const AddRecipePopup = () => (
             <Popup trigger={<button className="button"> Add Recipe </button>} modal nested>
                 {close => (
                     <div className="modal">
@@ -256,6 +306,197 @@ class Recipes extends Component{
             </Popup>
         );
 
+        const DeleteRecipePopup = () => (
+            <Popup trigger={<button className="button"> Delete Recipe </button>} modal nested>
+                {close => (
+                    <div className="modal">
+                        <button className="close" onClick={close}>
+                            &times;
+                        </button>
+                        <div className="header"> Delete Recipe </div>
+                        <div className="content">
+                            <div className="field-row">
+                                <div className="field-label">
+                                    <label>Recipe Title</label>
+                                </div>
+                                <div className="field-value">
+                                    <input
+                                        className="field-input"
+                                        type="text"
+                                        value={title}
+                                        onChange={this.titleChange}
+                                    />
+                                    {errors.meal_name && 
+                                        <div className="err" >
+                                            <a data-tooltip-id="meal_name_err" data-tooltip-content={errors.meal_name}>
+                                                <i className="fa-solid fa-circle-exclamation error-icon"></i>
+                                            </a>
+                                            <Tooltip id="meal_name_err" />
+                                        </div>
+                                        
+                                    }
+                                    
+                                </div>
+                            </div>
+                            
+                        </div>
+                        <div className="actions">
+                            <button
+                                className="button"
+                                onClick={() => {
+                                    console.log('modal closed ');
+                                    this.submitDeleteRecipe();
+                                    close();
+                                }}
+                            >
+                                Submit
+                            </button>
+                            <button
+                                className="button"
+                                onClick={() => {
+                                    console.log('modal closed ');
+                                    close();
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </Popup>
+        );
+
+        const EditRecipePopup = () => (
+            <Popup trigger={<button className="button"> Edit Recipe </button>} modal nested>
+                {close => (
+                    <div className="modal">
+                        <button className="close" onClick={close}>
+                            &times;
+                        </button>
+                        <div className="header"> Edit Recipe </div>
+                        <div className="content">
+                            <div className="field-row">
+                                <div className="field-label">
+                                    <label>Recipe Title</label>
+                                </div>
+                                <div className="field-value">
+                                    <input
+                                        className="field-input"
+                                        type="text"
+                                        value={title}
+                                        onChange={this.titleChange}
+                                    />
+                                    {errors.meal_name && 
+                                        <div className="err" >
+                                            <a data-tooltip-id="meal_name_err" data-tooltip-content={errors.meal_name}>
+                                                <i className="fa-solid fa-circle-exclamation error-icon"></i>
+                                            </a>
+                                            <Tooltip id="meal_name_err" />
+                                        </div>
+                                        
+                                    }
+                                    
+                                </div>
+                            </div>
+                            
+                            <div className="field-row">
+                                <div className="field-label">
+                                    <label>Description</label>
+                                </div>
+                                <div className="field-value">
+                                    <input
+                                        className="field-input"
+                                        type="text"
+                                        value={description}
+                                        onChange={this.descriptionChange}
+                                    />
+                                    {errors.meal_name && 
+                                        <div className="err" >
+                                            <a data-tooltip-id="meal_name_err" data-tooltip-content={errors.meal_name}>
+                                                <i className="fa-solid fa-circle-exclamation error-icon"></i>
+                                            </a>
+                                            <Tooltip id="meal_name_err" />
+                                        </div>
+                                        
+                                    }
+                                    
+                                </div>
+                            </div>
+                            
+                            <div className="field-row">
+                                <div className="field-label">
+                                    <label>Ingredients</label>
+                                </div>
+                                <div className="field-value">
+                                    <input
+                                        className="field-input"
+                                        type="text"
+                                        value={ingredients}
+                                        onChange={this.ingredientsChange}
+                                    />
+                                    {errors.meal_name && 
+                                        <div className="err" >
+                                            <a data-tooltip-id="meal_name_err" data-tooltip-content={errors.meal_name}>
+                                                <i className="fa-solid fa-circle-exclamation error-icon"></i>
+                                            </a>
+                                            <Tooltip id="meal_name_err" />
+                                        </div>
+                                        
+                                    }
+                                    
+                                </div>
+                            </div>
+
+                            <div className="field-row">
+                                <div className="field-label">
+                                    <label>Instructions</label>
+                                </div>
+                                <div className="field-value">
+                                    <input
+                                        className="field-input"
+                                        type="text"
+                                        value={instructions}
+                                        onChange={this.instructionsChange}
+                                    />
+                                    {errors.meal_name && 
+                                        <div className="err" >
+                                            <a data-tooltip-id="meal_name_err" data-tooltip-content={errors.meal_name}>
+                                                <i className="fa-solid fa-circle-exclamation error-icon"></i>
+                                            </a>
+                                            <Tooltip id="meal_name_err" />
+                                        </div>
+                                        
+                                    }
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        <div className="actions">
+                            <button
+                                className="button"
+                                onClick={() => {
+                                    console.log('modal closed ');
+                                    this.submitEditRecipe();
+                                    close();
+                                }}
+                            >
+                                Submit
+                            </button>
+                            <button
+                                className="button"
+                                onClick={() => {
+                                    console.log('modal closed ');
+                                    close();
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </Popup>
+        );
+
         return (   
            <div>
                 <Title text={`Recipes`} />
@@ -280,7 +521,9 @@ class Recipes extends Component{
                                 </div>
                             }
                         </div>
-                        <PopupExample />
+                        <AddRecipePopup />
+                        <EditRecipePopup />
+                        <DeleteRecipePopup />
                         <About image={recipes_logo} />
                     </div>
                 </div>
