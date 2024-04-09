@@ -144,13 +144,25 @@ class Calories extends Component {
     groupChange = (selectedOption) => {
         let group = selectedOption.value;
 
-        let categories = starches;
+        let categories = [];
+        let category = '';
+        fetch(`http://localhost:3001/calories/groups/${group}/categories/get`, {
+            method: 'get',
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then (data => {
+            if (data.result == "success"){
+                categories = data.categories;
+                if (categories.length != 0){
+                    category = categories[0];
+                }
+                this.setState({ food_group: selectedOption, categories: categories, category: category});
+            }
+        })
+        
 
-        if (group == "starch"){
-            categories = starches
-        }
-
-        this.setState({ food_group: selectedOption, categories: categories, category: categories[0]});
+        
     };
 
     /**
@@ -168,13 +180,28 @@ class Calories extends Component {
      */
     categoryChange = (selectedOption) => {
         let category = selectedOption.value;
-        let ingredients = starch_items[category];
+        let ingredients = [];
+        // let ingredients = starch_items[category];
 
-        if (category.endsWith("_ss")){
-            ingredients = starch_items[category];
-        }
+        // if (category.endsWith("_ss")){
+        //     ingredients = starch_items[category];
+        // }
 
-        this.setState({ category: selectedOption, ingredients: ingredients});
+        fetch(`http://localhost:3001/calories/categories/${category}/items/get`, {
+            method: 'get',
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then (data => {
+            if (data.result == "success"){
+                ingredients = data.items;
+                this.setState({ category: selectedOption, ingredients: ingredients});
+            }
+        })
+
+
+
+        
 
     }
     
@@ -352,6 +379,7 @@ class Calories extends Component {
                                         />
                                     </div>
                                 </div>
+                                {categories.length != 0 &&
                                 <div className="field-row">
                                     <div className="field-label">
                                         <label>Category</label>
@@ -365,6 +393,7 @@ class Calories extends Component {
                                         />
                                     </div>
                                 </div>
+                                }
                                 <div className="field-row">
                                     <div className="field-label">
                                         <label>Ingredients</label>
