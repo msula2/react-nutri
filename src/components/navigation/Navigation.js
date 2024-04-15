@@ -19,10 +19,13 @@ class Navigation extends Component{
         return (
             <Navbar>
                 <Navbar.Group align={Alignment.LEFT}>
-                    <Navbar.Heading>Blueprint</Navbar.Heading>
+                    <Navbar.Heading>Nutri. </Navbar.Heading>
                     <Navbar.Divider />
-                    <Button className="bp5-minimal" icon="home" text="Home" />
-                    <Button className="bp5-minimal" icon="document" text="Files" />
+                </Navbar.Group>
+                <Navbar.Group align={Alignment.RIGHT}>
+                    <Button className="bp3-minimal" icon="home" text="Home" />
+                    <Navbar.Divider />
+                    <Button className="bp3-minimal" icon="document" text="Files" />
                 </Navbar.Group>
             </Navbar>
             // <nav className="bg-white-90 w-100 bb">
