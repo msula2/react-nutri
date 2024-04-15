@@ -57,11 +57,14 @@ class App extends Component {
   render() {
     return (
       <BrowserRouter>
-        <Navigation />
+        {window.location.pathname !== "/login" && window.location.pathname !== "/register" && window.location.pathname !== "/docs" && 
+          <Navigation />
+        }
         <Routes>
-            <Route path="/" element={<Dashboard user={this.state.user} loggedIn={this.state.loggedIn}/>} />
             <Route path="/login" element={<Login setUser={this.setUserDetails}/>} />
             <Route path="/register" element={<Register setUserDetails={this.setUserDetails} />} />
+            <Route path="/docs" element={<Docs />} />
+            <Route path="/" element={<Dashboard user={this.state.user} loggedIn={this.state.loggedIn}/>} />
             <Route path="/nutrients" element={<Nutrients />} />
             <Route path="/nutrients/carbohydrates" element={<Carbohydrates />} />
             <Route path="/nutrients/protiens" element={<Protiens />} />
@@ -69,7 +72,6 @@ class App extends Component {
             <Route path="/nutrients/vitamins" element={<Vitamins />} />
             <Route path="/nutrients/minerals" element={<Minerals />} />
             <Route path="/nutrients/water" element={<Water />} />
-            <Route path="/docs" element={<Docs />} />
             <Route path="/calories" element={<Calories />} />
         </Routes>
       </BrowserRouter>

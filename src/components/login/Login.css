@@ -1,0 +1,35 @@
+@import "@blueprintjs/core/lib/scss/variables.scss";
+
+.title{
+    color: #FFE39F;
+    font-size: 70px;
+
+}
+.bp5-input-group.bp5-intent-success .bp5-input:focus {
+    box-shadow: inset 0 0 0 2px #238551, 0 0 0 2px rgb(166, 217, 64), inset 0 1px 1px rgba(17, 20, 24, 0.2) !important;
+}
+
+.bp5-input-group.bp5-intent-danger{
+    box-shadow: inset 0 0 0 2px #852323, 0 0 0 2px rgb(223, 64, 64), inset 0 1px 1px rgba(17, 20, 24, 0.2) !important; 
+    border-radius: 17px !important;
+}
+
+
+.bp5-input{
+    border-radius: 17px !important;
+}
+a.bp5-button{
+    border-radius: 17px !important;
+    background-color: #2db36b !important;
+    border: none;
+}
+a.bp5-button:hover{
+    background-color: #239156 !important;
+}
+@media (max-width: 1418px) {
+    .stack-on-small {
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+}

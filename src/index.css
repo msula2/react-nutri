@@ -2,6 +2,8 @@ body {
   margin: 0;
   padding: 0;
   font-family: sans-serif;
+  background-color: rgb(12, 38, 85);
+
 }
 
 .detailed-card {
@@ -104,5 +106,7 @@ body {
   color: rgb(219, 30, 30);
   font-size: 18px;
 }
-
+bp5-input-group.bp5-intent-success .bp5-input{
+  box-shadow: 0 0 0 0 rgba(35, 133, 81, 0), 0 0 0 0 rgba(35, 133, 81, 0), inset 0 0 0 5px #05ee72, inset 0 0 0 1px rgba(17, 20, 24, 0.2), inset 0 1px 1px rgba(17, 20, 24, 0.3) !important;
+}
 
