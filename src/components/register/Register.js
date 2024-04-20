@@ -292,7 +292,7 @@ class Register extends Component {
                 </Link>
               </div>
               <div>
-                <AnchorButton
+                <Button
                   rightIcon="arrow-right"
                   intent="success"
                   text="Register"

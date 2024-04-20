@@ -128,13 +128,30 @@ body {
 .bp5-input{
     border-radius: 17px !important;
 }
-a.bp5-button, .bp5-button:not(.bp5-navbar .bp5-button){
-    border-radius: 17px !important;
-    background-color: #2db36b !important;
-    border: none;
+/* .bp5-button:not(.bp5-navbar .bp5-button, .bp5-datepicker button, .select-btn){
+  border-radius: 17px !important;
+  background-color: #2db36b !important;
+  border: none;
 }
-a.bp5-button:hover, .bp5-button:hover:not(.bp5-navbar .bp5-button){
-    background-color: #239156 !important;
+.bp5-button:hover:not(.bp5-navbar .bp5-button, .bp5-datepicker button, .select-btn){
+  background-color: #239156 !important;
+} */
+
+.submit-btn{
+  border-radius: 17px !important;
+  background-color: #2db36b !important;
+  border: none;
+}
+.submit-btn:hover{
+  background-color: #239156 !important;
+} 
+.btn.bp5-button{
+  border-radius: 17px !important;
+  background-color: #2db36b !important;
+  border: none;
+}
+.btn.bp5-button:hover{
+  background-color: #239156 !important;
 }
 
 
@@ -178,4 +195,21 @@ p{
   font-size: 25px !important;
   margin-right: 10px !important;
   color: #ffe39f !important;
+}
+
+.select-btn{
+  background-color: white !important;
+  border-radius: 17px !important;
+  display: flex;
+  justify-content: space-between !important;
+}
+
+.select-btn:focus{
+  outline: rgb(166, 217, 64) solid 2px !important;
+  outline-offset: 2px !important;
+  -moz-outline-radius: 6px !important;
+}
+
+.bp5-multi-select-tag-input-input{
+  padding: 5px !important;
 }

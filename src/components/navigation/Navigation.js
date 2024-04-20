@@ -9,23 +9,60 @@ class Navigation extends Component{
     constructor(){
         super();
         this.state = {
-            active: false
+            active: {
+                nutrients: false,
+                calories: false,
+                recipes: false,
+                healthtips: false
+            }
+        };
+    }
+
+    componentDidMount() {
+        this.tabActive();
+    }
+    tabActive = () => {
+        const pathname = window.location.pathname;
+        const { active } = this.state;
+
+        let newActiveState = {
+            nutrients: false,
+            calories: false,
+            recipes: false,
+            healthtips: false
+        };
+
+        if (pathname === '/nutrients') {
+            newActiveState = { ...newActiveState, nutrients: true };
+        } else if (pathname === '/calories') {
+            newActiveState = { ...newActiveState, calories: true };
+        } else if (pathname === '/recipes') {
+            newActiveState = { ...newActiveState, recipes: true };
+        } else if (pathname === '/health-tips') {
+            newActiveState = { ...newActiveState, healthtips: true };
         }
-    }
-    tabActive = () =>{
-        this.setState({active: !this.state.active})
-    }
+
+        this.setState({ active: newActiveState });
+    };
     render(){
+        
+        const { active } = this.state;
+
         return (
             <Navbar>
                 <Navbar.Group align={Alignment.LEFT}>
-                    <Navbar.Heading>Nutri. </Navbar.Heading>
+                <Link to="/dashboard"><Navbar.Heading>Nutri. </Navbar.Heading></Link>
                     <Navbar.Divider />
                 </Navbar.Group>
                 <Navbar.Group align={Alignment.RIGHT}>
-                    <Button className="bp3-minimal" icon="home" text="Home" />
                     <Navbar.Divider />
-                    <Button className="bp3-minimal" icon="document" text="Files" />
+                    <Link to="/nutrients"><Button minimal={true} large={true} text="Nutrients" style={{color: "#ffe39f", height: "50px", padding: "0 20px"}}/></Link>
+                    <Navbar.Divider />
+                    <Link to="/calories"><Button minimal={true} large={true} text="Calories" style={{color: "#ffe39f", height: "50px", padding: "0 20px"}}/></Link>
+                    <Navbar.Divider />
+                    <Link to="/recipes"><Button minimal={true} large={true} text="Recipes" style={{color: "#ffe39f", height: "50px", padding: "0 20px"}}/></Link>
+                    <Navbar.Divider />
+                    <Link to="/health-tips"><Button minimal={true} large={true} text="Health Tips" style={{color: "#ffe39f", height: "50px", padding: "0 20px"}}/></Link>
                 </Navbar.Group>
             </Navbar>
             // <nav className="bg-white-90 w-100 bb">

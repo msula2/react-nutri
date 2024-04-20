@@ -279,7 +279,7 @@ class Login extends Component{
                                         <Link to="/register" className="f6 link dim db" style={{color: "#FFE39F"}}>Sign Up</Link>
                                     </div>
                                     <div>
-                                        <AnchorButton rightIcon="arrow-right" intent="success" text="Login" large={true} disabled={this.loginEnabled()} onClick={this.loginUser}/>
+                                        <Button rightIcon="arrow-right" intent="success" text="Login" large={true} disabled={this.loginEnabled()} onClick={this.loginUser}/>
                                     </div>
                                 
                                 </div>

@@ -1,12 +1,16 @@
 import React, { Component } from 'react';
-import Select from "react-select";
-import { Tooltip } from 'react-tooltip'
 import dayjs, { Dayjs } from 'dayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import MealTable from './MealTable';
 import {columns, food_groups, tracking_options, starches, starch_items} from './calories_data.js';
+import { Card, H3, Button, FormGroup, InputGroup, Tooltip, Icon, MenuItem, NumericInput, Popover, ButtonGroup, OverlayToaster, Toast2} from "@blueprintjs/core";
+import { Select, MultiSelect} from '@blueprintjs/select';
+import { DateInput3} from "@blueprintjs/datetime2";
+import { nutrients_desc } from '../../descriptions';
+import nutrients_logo from "../../assets/imgs/nutrients.png";
+import Title from '../title/Title';
+import About from '../about/About';
+import './Calories.css';
+import BreakdownChart from './BreakdownChart.js';
 /**
  * 
  * The Calories component allows the user to track their
@@ -57,20 +61,24 @@ class Calories extends Component {
             food_group: {label: "Starch/Bread", value: "starch"},
             category: {label: "Cereals/Grains/Pasta", value: "cereals_grain_pasta_ss"},
             categories: starches,
+            ingredient: '',
             ingredients_chosen: [],
             ingredients: starch_items.cereals_grain_pasta_ss,
-            data: [
-                // { id: 1, mealName: 'Breakfast', ingredients: ['Eggs', 'Toast', 'Orange Juice'], calories: 350 },
-                // { id: 2, mealName: 'Lunch', ingredients: ['Sandwich', 'Salad', 'Apple'], calories: 450 },
-                // { id: 3, mealName: 'Dinner', ingredients: ['Chicken', 'Rice', 'Broccoli'], calories: 550 }
-            ],
+            serving_unit: '',
+            serving_size: '',
+            grams_breakdown: [],
+            calories_breakdown: {},
+            showToaster: false,
             dirty: {
                 meal_name: false,
-                ingredients_chosen: false
+                ingredients_chosen: false,
+                datetime: false
             },
             errors: {
                 meal_name: '',
-                ingredients_chosen: ''
+                ingredients_chosen: '',
+                duplicate_entry: '',
+                datetime: ''
             }
         };
     }
@@ -125,7 +133,15 @@ class Calories extends Component {
      * 
      */
     dateChange = (dateTime) => {
-        this.setState({datetime: dateTime})
+
+        let errors = { ...this.state.errors };
+        let dirty = {...this.state.dirty};
+
+        dirty.datetime = true;
+
+        errors.datetime = dateTime.trim() === '' ? 'Date and time are required.' : '';
+
+        this.setState({datetime: dateTime, errors, dirty})
     }
 
     /**
@@ -181,11 +197,7 @@ class Calories extends Component {
     categoryChange = (selectedOption) => {
         let category = selectedOption.value;
         let ingredients = [];
-        // let ingredients = starch_items[category];
-
-        // if (category.endsWith("_ss")){
-        //     ingredients = starch_items[category];
-        // }
+        
 
         fetch(`http://localhost:3001/calories/categories/${category}/items/get`, {
             method: 'get',
@@ -204,30 +216,40 @@ class Calories extends Component {
         
 
     }
-    
-    /**
-     * Updates the selected ingredient for adding to the meal.
-     *
-     * @summary This method takes an onChange event and updates the selected ingredient for adding to the meal.
-     * 
-     * @instance
-     * @memberOf Calories
-     * @method ingredientsChange
-     *
-     * @param {Object} selectedOption - The selected option representing the ingredient.
-     * @param {string} selectedOption.label - The label of the selected ingredient option.
-     * @param {string} selectedOption.value - The value of the selected ingredient option.
-     */
-    ingredientsChange = (selectedOption) => {
-        let errors = {...this.state.errors}
+
+    ingredientChange = (selectedOption) => {
+        let ingredient = selectedOption.value;
+        let ingredient_info = {};
         
-        errors.ingredients_chosen = selectedOption.length == 0 ? 'Atleast one ingredient needs to be part of meal.' : '';
+        fetch(`http://localhost:3001/calories/items/${ingredient}/get`, {
+            method: 'get',
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then (data => {
+            if (data.result == "success"){
+                ingredient_info = data.item;
+                let pie_chart = ingredient_info.breakdown.grams;
+                let table_chart = ingredient_info.breakdown.calories;
+                
+                let errors = {...this.state.errors}
+                let ingredients_chosen = this.state.ingredients_chosen;
+        
+                if(ingredients_chosen.find((item) => item.value === ingredient)){
+                    errors.duplicate_entry = 'This food item already exists'
+                }
+                else{
+                    errors.duplicate_entry = ''
+                }
+                this.setState({ ingredient: selectedOption, serving_unit: ingredient_info.serving_unit, grams_breakdown: pie_chart, calories_breakdown: table_chart, errors});
+                
+            }
+        })
 
-        let dirty = {...this.state.dirty};
 
-        dirty.ingredients_chosen = true;
 
-        this.setState({ ingredients_chosen: selectedOption, errors, dirty});
+        
+
     }
 
     /**
@@ -241,42 +263,139 @@ class Calories extends Component {
      * @method addMeal
      */
     addMeal = () => {
-        const { meal_name, track_method, food_group, category, ingredients_chosen, data } = this.state;
-        let newData = [];
+        const {ingredients_chosen, meal_name, datetime} = this.state;
+        const { user } = this.props;
 
-        // Initialize calories
-        let calories = 0;
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}calories/${user.id}/meal/add`, {
+            method: 'post',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: meal_name,
+                datetime: datetime,
+                meal_ingredients: ingredients_chosen
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+        })
+        .catch(error => {
+            
+        });
+        // const { meal_name, track_method, food_group, category, ingredients_chosen, data } = this.state;
+        // let newData = [];
 
-        // Create a new ingredient object
-        let new_meal = {
-            id: data.length + 1,
-            mealName: meal_name,
-            ingredients: [ingredients_chosen.map(item => item.label)],
-            calories: 0,
-            breakdown: [
-                { name: 'Protein', value: 30 },
-                { name: 'Carbohydrates', value: 200 },
-                { name: 'Fat', value: 120 }
-              ]
-        };
+        // // Initialize calories
+        // let calories = 0;
+
+        // // Create a new ingredient object
+        // let new_meal = {
+        //     id: data.length + 1,
+        //     mealName: meal_name,
+        //     ingredients: [ingredients_chosen.map(item => item.label)],
+        //     calories: 0,
+        //     breakdown: [
+        //         { name: 'Protein', value: 30 },
+        //         { name: 'Carbohydrates', value: 200 },
+        //         { name: 'Fat', value: 120 }
+        //       ]
+        // };
 
 
-        // Calculate calories based on the selected food group
-        if (food_group.value === "starch") {
-            new_meal.calories = 80;
-        }
+        // // Calculate calories based on the selected food group
+        // if (food_group.value === "starch") {
+        //     new_meal.calories = 80;
+        // }
 
-        // Check if the meal already exists in the data
-        let meal_exists = data.filter((item) => item.mealName === meal_name);
+        // // Check if the meal already exists in the data
+        // let meal_exists = data.filter((item) => item.mealName === meal_name);
 
-        // If meal does not exist, create a new meal with the new ingredient
-        if (meal_exists.length === 0) {
-            newData = [...data, new_meal];
-        }
+        // // If meal does not exist, create a new meal with the new ingredient
+        // if (meal_exists.length === 0) {
+        //     newData = [...data, new_meal];
+        // }
 
-        // Update the state with the new meal data
-        this.setState({ data: newData });
+        // // Update the state with the new meal data
+        // this.setState({ data: newData });
     }
+
+    servingChange = (event) => {
+        const size = event;
+        const ingredient = this.state.ingredient;
+        let ingredient_info = {};   
+        if (size != 0){
+            fetch(`http://localhost:3001/calories/items/${ingredient.value}/get`, {
+            method: 'get',
+            credentials: 'include'
+            })
+            .then(response => response.json())
+            .then (data => {
+                if (data.result == "success"){
+                    ingredient_info = data.item;
+                    let grams_breakdown = ingredient_info.breakdown.grams;
+                    let calories_breakdown = ingredient_info.breakdown.calories;
+                    grams_breakdown = grams_breakdown.map((item) => ({name: item.name, value: item.value * size}));
+                    calories_breakdown = {
+                        carbohydrates: calories_breakdown.carbohydrates * size,
+                        proteins: calories_breakdown.proteins * size,
+                        fats: calories_breakdown.fats * size,
+                        total: calories_breakdown.total * size
+                    };
+
+                    this.setState({ serving_size: size, grams_breakdown, calories_breakdown});
+                    
+                }
+            })
+            
+            
+            
+        }
+        else{
+            this.setState({serving_size: size})
+        }
+        
+    }
+
+    ingredientAdd = () => {
+        const {ingredient, serving_size, ingredients_chosen, food_group} = this.state;
+        let food_item = {
+            label: ingredient.label,
+            value: ingredient.value,
+            serving_size: serving_size,
+            foodgroup: food_group.value
+        }
+        let errors = {...this.state.errors}
+        let dirty = {...this.state.dirty};
+
+        dirty.ingredients_chosen = true;
+
+        if(ingredients_chosen.find((item) => item.label === food_item.label) == undefined){
+            let ingredients_chosen_updated = [...ingredients_chosen];
+            ingredients_chosen_updated.push(food_item);
+            errors.ingredients_chosen = ingredients_chosen_updated.length == 0 ? 'Atleast one ingredient needs to be part of meal.' : '';
+            this.setState({ingredients_chosen: ingredients_chosen_updated, ingredient:'', serving_size: '', errors, dirty});
+        }
+        
+
+        
+    }
+
+    ingredientRemove = (itemToRemove) => {
+        const { ingredients_chosen } = this.state;
+        
+        const newIngredientsChosen = ingredients_chosen.filter(item => item.label !== itemToRemove);
+
+        let errors = {...this.state.errors}
+        let dirty = {...this.state.dirty};
+
+        dirty.ingredients_chosen = true;
+
+        
+        errors.ingredients_chosen = newIngredientsChosen.length == 0 ? 'Atleast one ingredient needs to be part of meal.' : '';
+    
+        this.setState({ ingredients_chosen: newIngredientsChosen, ingredient: '', dirty, errors });
+    };
+
 
 
     addEnabled = () => {
@@ -291,6 +410,17 @@ class Calories extends Component {
             return true;
         }
     }
+
+    renderItem = (item, { handleClick, modifiers }) => {
+        return (
+            <MenuItem
+                key={item.value}
+                text={item.label}
+                onClick={handleClick}
+                active={modifiers.active}
+            />
+        );
+    };
 
     /**
      * Displays the components of the Calories Module
@@ -307,140 +437,415 @@ class Calories extends Component {
 
 
     render() {
-        const {meal_name, datetime, meals, track_method, food_group, category, categories, ingredient, ingredients, data,  errors, add_enabled } = this.state;
+        const {meal_name, datetime, meals, track_method, food_group, category, categories, ingredient, ingredients, ingredients_chosen, data,  errors, add_enabled, serving_unit, serving_size, grams_breakdown,calories_breakdown, dateTime, showToaster} = this.state;
 
         return (
-            <div className="mt4">
-                <div className="fl w-50">
-                    <div className="detailed-card">
-                        <h1 className="detailed-title">Ingredients</h1>
-                        <div className="card-fields">
-                            <div className="field-row">
-                                <div className="field-label">
-                                    <label>Meal Name</label>
-                                </div>
-                                <div className="field-value">
-                                    <input
-                                        className="field-input"
-                                        type="text"
-                                        value={meal_name}
-                                        onChange={this.nameChange}
-                                    />
-                                    {errors.meal_name && 
-                                        <div className="err" >
-                                            <a data-tooltip-id="meal_name_err" data-tooltip-content={errors.meal_name}>
-                                                <i className="fa-solid fa-circle-exclamation error-icon"></i>
-                                            </a>
-                                            <Tooltip id="meal_name_err" />
-                                        </div>
-                                    }
-                                    
-                                </div>
-                            </div>
-                            <div className="field-row">
-                                <div className="field-label">
-                                    <label>Time</label>
-                                </div>
-                                <div className="field-value">
-                                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    <DateTimePicker
-                                        value={datetime}
-                                        onChange={this.dateChange}
-                                        className="w-80"
-                                    />
-                                </LocalizationProvider>                             
-                                </div>
-                            </div>
-                            <div className="field-row">
-                                <div className="field-label">
-                                    <label>Method of tracking</label>
-                                </div>
-                                <div className="field-value">
-                                    <Select
-                                        value={track_method}
-                                        onChange={this.trackChange}
-                                        options={tracking_options}
-                                        className="w-80"
-                                    />
-                                </div>
-                            </div>
-                            {this.state.track_method.value == 'exchange' ? 
-                            <div className="w-100">
-                                <div className="field-row">
-                                    <div className="field-label">
-                                        <label>Food Group</label>
-                                    </div>
-                                    <div className="field-value">
-                                        <Select
-                                            value={food_group}
-                                            onChange={this.groupChange}
-                                            options={food_groups}
-                                            className="w-80"
-                                        />
-                                    </div>
-                                </div>
-                                {categories.length != 0 &&
-                                <div className="field-row">
-                                    <div className="field-label">
-                                        <label>Category</label>
-                                    </div>
-                                    <div className="field-value">
-                                        <Select
-                                            value={category}
-                                            onChange={this.categoryChange}
-                                            options={categories}
-                                            className="w-80"
-                                        />
-                                    </div>
-                                </div>
-                                }
-                                <div className="field-row">
-                                    <div className="field-label">
-                                        <label>Ingredients</label>
-                                    </div>
-                                    <div className="field-value">
-                                        <Select
-                                            isMulti
-                                            name="ingredients"
-                                            onChange={this.ingredientsChange}
-                                            options={ingredients}
-                                            className="basic-multi-select, w-80"
-                                            classNamePrefix="select"
-                                            
-                                        />
-                                        {errors.ingredients_chosen && 
-                                            <div className="err" >
-                                                <a data-tooltip-id="ingredients_chosen_err" data-tooltip-content={errors.ingredients_chosen}>
-                                                    <i className="fa-solid fa-circle-exclamation error-icon"></i>
-                                                </a>
-                                                <Tooltip id="ingredients_chosen_err" />
+            <div className='vw-100 vh-100 d-flex flex-column justify-center items-center'>
+                {showToaster &&
+                <OverlayToaster className="mt5">
+                    <Toast2 
+                    icon="tick-circle" 
+                    intent="success" 
+                    message="Added to table successfully" 
+                    />
+                </OverlayToaster>
+                }
+                <Title text="Calories" color="#FFE39F" />
+                
+                <div className="flex justify-center">
+                    <div className="mt5 w-80">
+                        <Card interactive={true} elevation={4} className="card-content" style={{paddingTop: "0px", paddingBottom: "0px"}}>
+                            <div className="flex h-100 w-100">
+                                <div className="w-40 mt0" style={{borderRight: '2px solid rgb(166, 217, 64)'}}>
+                                    <H3 style={{padding: "2rem"}}>Add Meal Information</H3>
+                                    <div className="pa4 pb0">
+                                        <FormGroup
+                                        label="Meal Name"
+                                        inline={true}
+                                        className="white bp5-text-large"
+                                        >
+                                            <div className="flex items-center">
+                                                <InputGroup 
+                                                    onChange={this.nameChange}
+                                                    placeholder=""
+                                                    intent= {errors.meal_name === '' ? "success": "danger"}
+                                                    large={true}
+                                                    value={meal_name}
+                                                    
+                                                    
+                                                />
+                                                {errors.meal_name && 
+                                                <Tooltip content={errors.meal_name} placement="right" >
+                                                    <i className="fa-solid fa-circle-exclamation error-icon ml3"></i>
+                                                </Tooltip>
+                                                
+                                                }
                                             </div>
+                                        </FormGroup>
+
+                                        <FormGroup
+                                            label="Time"
+                                            inline={true}
+                                            className="white bp5-text-large"
+                                        >
+                                            <div className="flex items-center">
+                                                <div className="w-100">
+                                                    <DateInput3
+                                                        locale={"en-US"}
+                                                        onChange={this.dateChange}
+                                                        popoverProps={{ placement: "right" }}
+                                                        rightElement={
+                                                            true && <Icon icon="globe" intent="primary" style={{ padding: "11px 7px" }} />
+                                                        }
+                                                        timePickerProps={true}
+                                                        showTimePickerArrows={true}
+                                                        useAmPm={true}
+                                                        dateFnsFormat={"yyyy-MM-dd HH:mm:ss"}
+                                                        timePickerProps={{ showArrowButtons:true, useAmPm: true}}
+                                                        value={dateTime}
+                                                        className={"bp5-intent-success bp5-large"}
+                                                    />
+                                                    
+                                                </div>
+                                                {errors.datetime && (
+                                                    <Tooltip content={errors.datetime} placement="right" >
+                                                        <i className="fa-solid fa-circle-exclamation error-icon ml3"></i>
+                                                    </Tooltip>
+                                                )}
+                                            </div>
+                                        </FormGroup>
+                                        <FormGroup
+                                        label="Food Group"
+                                        inline={true}
+                                        className="white bp5-text-large"
+                                        >
+                                            <div className="flex items-center">
+                                            <Select
+                                                activeItem={food_group}
+                                                onItemSelect={this.groupChange}
+                                                items={food_groups}
+                                                itemRenderer={this.renderItem}
+                                                filterable={false}
+                                                popoverProps={{ minimal: false, placement: "right"}}
+                                                className="w-70"
+                                                
+                                            >
+
+                                                <Button
+                                                    rightIcon={<Icon icon="caret-down" intent="success"/>}
+                                                    text={food_group ? food_group.label : 'Select...'}
+                                                    fill={true}
+                                                    large={true}
+                                                    round={true}
+                                                    className="select-btn flex justify-space"
+
+                                                />
+                                            </Select>
+                                            </div>
+                                        </FormGroup>
+                                        {categories.length != 0 &&
+                                        <FormGroup
+                                        label="Category"
+                                        inline={true}
+                                        className="white bp5-text-large"
+                                        >
+                                            <div className="flex items-center">
+                                            <Select
+                                                activeItem={category}
+                                                onItemSelect={this.categoryChange}
+                                                items={categories}
+                                                itemRenderer={this.renderItem}
+                                                filterable={false}
+                                                popoverProps={{ minimal: false, placement: "right"}}
+                                                className="w-70"
+                                                
+                                            >
+
+                                                <Button
+                                                    rightIcon={<Icon icon="caret-down" intent="success"/>}
+                                                    text={category ? category.label : 'Select...'}
+                                                    fill={true}
+                                                    large={true}
+                                                    round={true}
+                                                    className="select-btn flex justify-space"
+
+                                                />
+                                            </Select>
+                                            </div>
+                                        </FormGroup>
                                         }
+                                        
+                                        <FormGroup
+                                        label="Food Item"
+                                        inline={true}
+                                        className="white bp5-text-large"
+                                        >
+                                            <div className="flex items-center">
+                                            <Select
+                                                activeItem={ingredient}
+                                                onItemSelect={this.ingredientChange}
+                                                items={ingredients}
+                                                itemRenderer={this.renderItem}
+                                                filterable={false}
+                                                popoverProps={{ minimal: false, placement: "right"}}
+                                                className="w-70"
+                                                
+                                            >
+
+                                                <Button
+                                                    rightIcon={<Icon icon="caret-down" intent="success"/>}
+                                                    text={ingredient ? ingredient.label : 'Select...'}
+                                                    fill={true}
+                                                    large={true}
+                                                    round={true}
+                                                    className="select-btn flex justify-space"
+
+                                                />
+                                            </Select>
+                                            </div>
+                                        </FormGroup>
+                                        {ingredient != '' &&
+                                        <React.Fragment>
+                                        <FormGroup
+                                        label="Serving Size"
+                                        inline={true}
+                                        className="white bp5-text-large"
+                                        >
+                                            <div className="flex items-center">
+                                                <div className="w-40">
+                                                    <NumericInput 
+                                                    onValueChange={this.servingChange} 
+                                                    large={true}
+                                                    buttonPosition="none"
+                                                    intent={"success"}
+                                                    disabled={errors.duplicate_entry ? true: false}
+                                                    />
+                                                </div>
+                                                <div className="w-60">
+                                                    <div className="w-50">
+                                                    <ButtonGroup large={true} className="flex justify-between items-center">
+                                                        <div className="mr3">{serving_unit}</div>
+                                                        <Popover
+                                                        content={
+                                                            <div>
+                                                                 <div>
+                                                                    <BreakdownChart data_pie={grams_breakdown} data_table={calories_breakdown} width={300} height={300}/>
+                                                                 </div>
+                                                                 
+                                                            </div>
+                                                            
+                                                        }
+                                                        interactionKind="click"
+                                                        onInteraction={state => this.handleInteraction(state)} 
+                                                        placement="right"
+                                                        >
+                                                        <Tooltip content={"Click to see caloric breakdown"} placement="right"><i className="fa-solid fa-chart-pie mr3"></i></Tooltip>
+                                                        </Popover>
+                                                        {errors.duplicate_entry === '' && serving_size != 0 &&
+                                                        <Tooltip content={"Click to add to list of food items"} placement="right"><Icon icon="add" onClick={this.ingredientAdd}></Icon></Tooltip>
+                                                        }
+                                                        {errors.duplicate_entry &&
+                                                        <Tooltip content={errors.duplicate_entry} placement="right" >
+                                                                <i className="fa-solid fa-circle-exclamation error-icon ml3"></i>
+                                                        </Tooltip> 
+                                                        }
+                                                        
+                                                    </ButtonGroup>
+
+                                                    </div>
+                                                    
+                                                </div>
+                                                
+                                                
+                                            </div>
+                                            
+                                        </FormGroup>
+                                        
+                                        </React.Fragment>
+                                        
+                                        }
+                                        <FormGroup
+                                            label="Food Items"
+                                            inline={true}
+                                            className="white bp5-text-large"
+                                        >
+                                            <div className="flex items-center">
+                                                <MultiSelect
+                                                    items={ingredients_chosen}
+                                                    itemRenderer={this.renderItem}
+                                                    tagRenderer={item => item.label}
+                                                    placeholder="List of food items"
+                                                    popoverProps={{ minimal: true}}
+                                                    selectedItems={ingredients_chosen}
+                                                    tagInputProps={{
+                                                        onRemove: this.ingredientRemove,
+                                                    }}
+                                                    className="w-70"
+                                                />
+                                                {errors.ingredients_chosen && 
+                                                <Tooltip content={errors.ingredients_chosen} placement="right" >
+                                                    <i className="fa-solid fa-circle-exclamation error-icon ml3"></i>
+                                                </Tooltip>
+                                                
+                                                }
+                                                
+                                            </div>
+                                        </FormGroup>
+                                        
                                     </div>
-                                    
+                                    <div className="flex justify-end pa3">
+                                    <Tooltip content="Click to add meal to the table" placement="right">
+                                        <Button className={"submit-btn"} 
+                                        rightIcon="plus" intent="success" 
+                                        text="Add" large={true} 
+                                        disabled={this.addEnabled()}
+                                        onClick={this.addMeal}/>
+                                    </Tooltip>
+                                    </div>   
                                 </div>
+                                <div className="w-60 pa3">
+                                </div>
+
                             </div>
-                            
-                            :
-                            <div>To do</div>
-                            }
-                        </div>
-                        <div className="card-tools">
-                            <button 
-                                className="btn-submit"
-                                disabled={this.addEnabled()}
-                                onClick={this.addMeal}><i className="fa-solid fa-plus"></i> Add
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div className="fl w-50">
-                    <div className="detailed-card">
-                        <h1 className="detailed-title">Meal Information</h1>
-                        <MealTable columns={columns} data={data} />
+                        </Card>
                     </div>
                 </div>
             </div>
+
+            
+            
+            
+            // <div className="mt4">
+            //     <div className="fl w-50">
+            //         <div className="detailed-card">
+            //             <h1 className="detailed-title">Ingredients</h1>
+            //             <div className="card-fields">
+            //                 <div className="field-row">
+            //                     <div className="field-label">
+            //                         <label>Meal Name</label>
+            //                     </div>
+            //                     <div className="field-value">
+            //                         <input
+            //                             className="field-input"
+            //                             type="text"
+            //                             value={meal_name}
+            //                             onChange={this.nameChange}
+            //                         />
+            //                         {errors.meal_name && 
+            //                             <div className="err" >
+            //                                 <a data-tooltip-id="meal_name_err" data-tooltip-content={errors.meal_name}>
+            //                                     <i className="fa-solid fa-circle-exclamation error-icon"></i>
+            //                                 </a>
+            //                                 <Tooltip id="meal_name_err" />
+            //                             </div>
+            //                         }
+                                    
+            //                     </div>
+            //                 </div>
+            //                 <div className="field-row">
+            //                     <div className="field-label">
+            //                         <label>Time</label>
+            //                     </div>
+            //                     <div className="field-value">
+            //                     <LocalizationProvider dateAdapter={AdapterDayjs}>
+            //                         <DateTimePicker
+            //                             value={datetime}
+            //                             onChange={this.dateChange}
+            //                             className="w-80"
+            //                         />
+            //                     </LocalizationProvider>                             
+            //                     </div>
+            //                 </div>
+            //                 <div className="field-row">
+            //                     <div className="field-label">
+            //                         <label>Method of tracking</label>
+            //                     </div>
+            //                     <div className="field-value">
+            //                         <Select
+            //                             value={track_method}
+            //                             onChange={this.trackChange}
+            //                             options={tracking_options}
+            //                             className="w-80"
+            //                         />
+            //                     </div>
+            //                 </div>
+            //                 {this.state.track_method.value == 'exchange' ? 
+            //                 <div className="w-100">
+            //                     <div className="field-row">
+            //                         <div className="field-label">
+            //                             <label>Food Group</label>
+            //                         </div>
+            //                         <div className="field-value">
+            //                             `<Select
+            //                                 value={food_group}
+            //                                 onChange={this.groupChange}
+            //                                 options={food_groups}
+            //                                 className="w-80"
+            //                             />`
+            //                         </div>
+            //                     </div>
+            //                     {categories.length != 0 &&
+            //                     <div className="field-row">
+            //                         <div className="field-label">
+            //                             <label>Category</label>
+            //                         </div>
+            //                         <div className="field-value">
+            //                             <Select
+            //                                 value={category}
+            //                                 onChange={this.categoryChange}
+            //                                 options={categories}
+            //                                 className="w-80"
+            //                             />
+            //                         </div>
+            //                     </div>
+            //                     }
+            //                     <div className="field-row">
+            //                         <div className="field-label">
+            //                             <label>Ingredients</label>
+            //                         </div>
+            //                         <div className="field-value">
+            //                             <Select
+            //                                 isMulti
+            //                                 name="ingredients"
+            //                                 onChange={this.ingredientsChange}
+            //                                 options={ingredients}
+            //                                 className="basic-multi-select, w-80"
+            //                                 classNamePrefix="select"
+                                            
+            //                             />
+            //                             {errors.ingredients_chosen && 
+            //                                 <div className="err" >
+            //                                     <a data-tooltip-id="ingredients_chosen_err" data-tooltip-content={errors.ingredients_chosen}>
+            //                                         <i className="fa-solid fa-circle-exclamation error-icon"></i>
+            //                                     </a>
+            //                                     <Tooltip id="ingredients_chosen_err" />
+            //                                 </div>
+            //                             }
+            //                         </div>
+                                    
+            //                     </div>
+            //                 </div>
+                            
+            //                 :
+            //                 <div>To do</div>
+            //                 }
+            //             </div>
+            //             <div className="card-tools">
+            //                 <button 
+            //                     className="btn-submit"
+            //                     disabled={this.addEnabled()}
+            //                     onClick={this.addMeal}><i className="fa-solid fa-plus"></i> Add
+            //                 </button>
+            //             </div>
+            //         </div>
+            //     </div>
+            //     <div className="fl w-50">
+            //         <div className="detailed-card">
+            //             <h1 className="detailed-title">Meal Information</h1>
+            //             <MealTable columns={columns} data={data} />
+            //         </div>
+            //     </div>
+            // </div>
         );
     }
 }
