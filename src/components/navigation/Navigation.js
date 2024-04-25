@@ -65,28 +65,6 @@ class Navigation extends Component{
                     <Link to="/health-tips"><Button minimal={true} large={true} text="Health Tips" style={{color: "#ffe39f", height: "50px", padding: "0 20px"}}/></Link>
                 </Navbar.Group>
             </Navbar>
-            // <nav className="bg-white-90 w-100 bb">
-            //     <ul className="f5 fw6 ttu tracked list mb0 mt0">
-            //         <div className="flex items-center justify-between">
-            //                 <div className="f3 flex justify-start"><Link to="/" className="black">Nutri</Link></div>
-            //                 <div className="flex justify-end">
-            //                     <div className={`flex items-center bl pr3 ${this.state.active ? "bg-black-90" : "bg-white-90"}`}>
-            //                         <li className="dib mr3 pa3">
-            //                             <Link className={this.state.active ? "white" : "black"} to="/nutrients" onClick={this.tabActive}>Nutrients</Link>
-            //                         </li>
-            //                         <img src={nutrients} className="dib mw2"></img>
-            //                     </div>
-            //                     <div style={{float: "right"}} className={`flex items-center bl pr3 ${this.state.active ? "bg-black-90" : "bg-white-90"}`}>
-            //                         <li className="dib mr3 pa3">
-            //                             <Link className={this.state.active ? "white" : "black"} to="/calories" onClick={this.tabActive}>Calories</Link>
-            //                         </li>
-            //                         <img src={calories} className="dib mw2"></img>
-            //                     </div>
-            //                 </div>
-                            
-            //         </div>
-            //     </ul>
-            // </nav>
         );
     }
     

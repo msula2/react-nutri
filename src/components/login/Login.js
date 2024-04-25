@@ -108,11 +108,11 @@ class Login extends Component{
             let username = this.state.username;
             let password = this.state.password
 
-            this.setState({ loading: true });
+            // this.setState({ loading: true });
 
-            setTimeout(() => {
-            this.setState({ loading: false });
-            }, 3000);
+            // setTimeout(() => {
+            // this.setState({ loading: false });
+            // }, 3000);
 
 
             fetch("http://localhost:3001/login", {
@@ -128,9 +128,8 @@ class Login extends Component{
             .then(data => {
                 if (data.result == "success"){
                     this.props.setUser(data.data.username, data.data.id);
-                    this.setState({loggedIn: true});
                     setTimeout(() => {
-                        window.location.replace("/dashboard");
+                        this.setState({loggedIn: true});
                       }, 3000);
                     
                 }
@@ -172,7 +171,7 @@ class Login extends Component{
     
     render(){
 
-        const { showPassword, errors, username, password, loading, message} = this.state;
+        const { showPassword, errors, username, password, loading, message, loggedIn} = this.state;
         
         const lockButton = (
             <Tooltip content={`${showPassword ? "Hide" : "Show"} Password`} disabled={false}>
@@ -184,6 +183,10 @@ class Login extends Component{
             </Tooltip>
         );
 
+        if (loggedIn) {
+            return <Navigate to="/calories" />;
+        }
+    
 
         return(
             <div>
@@ -293,32 +296,6 @@ class Login extends Component{
                 </div>
             </div>
 
-            // <div>
-            //     {this.state.loggedIn ? <Navigate to="/" /> : 
-            //     <main className="pa4 black-80">
-            //         <div className="measure center">
-            //             <fieldset id="sign_up" className="ba b--transparent ph0 mh0">
-            //                 <legend className="f4 fw6 ph0 mh0">Sign In</legend>
-            //                 <div className="mt3">
-            //                     <label className="db fw6 lh-copy f6">Username</label>
-            //                     <input onChange={this.changeUsername} className="pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100"/>
-            //                 </div>
-            //                 <div className="mv3">
-            //                     <label className="db fw6 lh-copy f6">Password</label>
-            //                     <input onChange={this.changePassword} className="b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100" type="password" name="password" id="password"/>
-            //                 </div>
-            //                 <label className="pa0 ma0 lh-copy f6 pointer"><input type="checkbox"/> Remember me</label>
-            //             </fieldset>
-            //             <div className="">
-            //                 <button onClick={this.loginUser} className="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib">Sign in</button>
-            //             </div>
-            //             <div className="lh-copy mt3">
-            //                 <Link to="/register" className="f6 link dim black db">Sign up</Link>
-            //             </div>
-            //         </div>
-            //     </main>
-            // }
-            // </div>
             
         );
     }

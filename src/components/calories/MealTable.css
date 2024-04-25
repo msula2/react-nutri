@@ -1,0 +1,22 @@
+.p-datatable-thead tr th {
+    padding: 25px !important; 
+    text-align: center !important;
+    margin: auto;
+}
+
+.p-datatable {
+    border-radius: 17px; 
+    overflow: hidden; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+
+  .p-datatable-emptymessage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  
+  

@@ -68,7 +68,15 @@ class Calories extends Component {
             serving_size: '',
             grams_breakdown: [],
             calories_breakdown: {},
-            showToaster: false,
+            ToasterSuccess: {
+                show: false,
+                message: ''
+            },
+            ToasterFailed: {
+                show: false,
+                message: ''
+            },
+            userMeals: [],
             dirty: {
                 meal_name: false,
                 ingredients_chosen: false,
@@ -82,6 +90,24 @@ class Calories extends Component {
             }
         };
     }
+
+    componentDidMount() { 
+        const { user } = this.props;
+        fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/user/${user.id}/meals/breakdown`, {
+          method: 'get',
+          credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.result === "success") {
+            console.log(data.meals);
+            this.setState({ userMeals: data.meals });
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+      }
 
     /**
      * Updates the tracking method for calories based on the onChange event.
@@ -162,7 +188,7 @@ class Calories extends Component {
 
         let categories = [];
         let category = '';
-        fetch(`http://localhost:3001/calories/groups/${group}/categories/get`, {
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/groups/${group}/categories/get`, {
             method: 'get',
             credentials: 'include'
         })
@@ -199,7 +225,7 @@ class Calories extends Component {
         let ingredients = [];
         
 
-        fetch(`http://localhost:3001/calories/categories/${category}/items/get`, {
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/categories/${category}/items/get`, {
             method: 'get',
             credentials: 'include'
         })
@@ -221,7 +247,7 @@ class Calories extends Component {
         let ingredient = selectedOption.value;
         let ingredient_info = {};
         
-        fetch(`http://localhost:3001/calories/items/${ingredient}/get`, {
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/items/${ingredient}/get`, {
             method: 'get',
             credentials: 'include'
         })
@@ -263,11 +289,12 @@ class Calories extends Component {
      * @method addMeal
      */
     addMeal = () => {
-        const {ingredients_chosen, meal_name, datetime} = this.state;
+        const {ingredients_chosen, meal_name, datetime, ToasterSuccess, ToasterFailed} = this.state;
         const { user } = this.props;
 
-        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}calories/${user.id}/meal/add`, {
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/user/${user.id}/meal/add`, {
             method: 'post',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 name: meal_name,
@@ -277,10 +304,16 @@ class Calories extends Component {
         })
         .then(response => response.json())
         .then(data => {
-            console.log(data);
-        })
-        .catch(error => {
-            
+            if (data.result == "success"){
+                ToasterSuccess.show = true;
+                ToasterSuccess.message = data.message;
+                this.setState({ ToasterSuccess});
+            }
+            else{
+                ToasterFailed.show = true;
+                ToasterFailed.message = data.message;
+                this.setState({ ToasterFailed});
+            }
         });
         // const { meal_name, track_method, food_group, category, ingredients_chosen, data } = this.state;
         // let newData = [];
@@ -324,7 +357,7 @@ class Calories extends Component {
         const ingredient = this.state.ingredient;
         let ingredient_info = {};   
         if (size != 0){
-            fetch(`http://localhost:3001/calories/items/${ingredient.value}/get`, {
+            fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/items/${ingredient.value}/get`, {
             method: 'get',
             credentials: 'include'
             })
@@ -437,16 +470,25 @@ class Calories extends Component {
 
 
     render() {
-        const {meal_name, datetime, meals, track_method, food_group, category, categories, ingredient, ingredients, ingredients_chosen, data,  errors, add_enabled, serving_unit, serving_size, grams_breakdown,calories_breakdown, dateTime, showToaster} = this.state;
+        const {meal_name, meals, food_group, category, categories, ingredient, ingredients, ingredients_chosen,  errors, serving_unit, serving_size, grams_breakdown,calories_breakdown, userMeals, dateTime, ToasterSuccess, ToasterFailed} = this.state;
 
         return (
             <div className='vw-100 vh-100 d-flex flex-column justify-center items-center'>
-                {showToaster &&
+                {ToasterSuccess.show &&
                 <OverlayToaster className="mt5">
                     <Toast2 
                     icon="tick-circle" 
                     intent="success" 
-                    message="Added to table successfully" 
+                    message={ToasterSuccess.message} 
+                    />
+                </OverlayToaster>
+                }
+                {ToasterFailed.show &&
+                <OverlayToaster className="mt5">
+                    <Toast2 
+                    icon="warning-sign" 
+                    intent="danger" 
+                    message={ToasterFailed.message} 
                     />
                 </OverlayToaster>
                 }
@@ -456,7 +498,7 @@ class Calories extends Component {
                     <div className="mt5 w-80">
                         <Card interactive={true} elevation={4} className="card-content" style={{paddingTop: "0px", paddingBottom: "0px"}}>
                             <div className="flex h-100 w-100">
-                                <div className="w-40 mt0" style={{borderRight: '2px solid rgb(166, 217, 64)'}}>
+                                <div className="w-40 mt3">
                                     <H3 style={{padding: "2rem"}}>Add Meal Information</H3>
                                     <div className="pa4 pb0">
                                         <FormGroup
@@ -691,19 +733,28 @@ class Calories extends Component {
                                                 
                                             </div>
                                         </FormGroup>
+                                        <div className="flex justify-end pa3">
+                                        <div className="w-70">
+                                            <Tooltip content="Click to add meal to the table" placement="right">
+                                                <Button className={"submit-btn"} 
+                                                rightIcon="plus" intent="success" 
+                                                text="Add" large={true} 
+                                                disabled={this.addEnabled()}
+                                                onClick={this.addMeal}/>
+                                            </Tooltip>
+                                        </div>
+                                       
+                                        </div>   
                                         
                                     </div>
-                                    <div className="flex justify-end pa3">
-                                    <Tooltip content="Click to add meal to the table" placement="right">
-                                        <Button className={"submit-btn"} 
-                                        rightIcon="plus" intent="success" 
-                                        text="Add" large={true} 
-                                        disabled={this.addEnabled()}
-                                        onClick={this.addMeal}/>
-                                    </Tooltip>
-                                    </div>   
+                                    
                                 </div>
-                                <div className="w-60 pa3">
+                                <div className="w-60 mt3">
+                                    <H3 style={{padding: "2rem", paddingLeft: "0px"}}>Meals Table</H3>
+                                    <div className="pa3 pl0">
+                                        <MealTable data={userMeals} />
+                                    </div>
+                                    
                                 </div>
 
                             </div>

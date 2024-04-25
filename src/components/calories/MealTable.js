@@ -1,78 +1,111 @@
-import React, { useState } from 'react';
-import { useTable } from 'react-table';
-import Modal from 'react-modal';
+import React from 'react';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Popover, Tooltip, Icon} from '@blueprintjs/core';
 import BreakdownChart from './BreakdownChart';
-import { Tooltip } from 'react-tooltip'; // Import Tooltip component
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primereact/resources/primereact.min.css";
+import './MealTable.css'; // Import your custom CSS file
 
-const MealTable = ({ columns, data }) => {
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = useTable({
-    columns,
-    data,
-  });
+class MealTable extends React.Component {
+  foodItemsTemplate(rowData) {
+    return (
+      <ul>
+        {rowData.food_items.map((foodItem, index) => (
+          <li key={index}>
+            <div className="w-100 flex justify-around pa1">
+              <div className="w-70">
+                {foodItem.name}
+              </div>
+              <div className="w-30">
+                <Popover
+                  content={
+                    <div>
+                      <BreakdownChart data_pie={foodItem.breakdown.grams} data_table={foodItem.breakdown.calories} width={300} height={300} />
+                    </div>
+                  }
+                  position="right"
+                >
+                  <Tooltip content="Click to see caloric breakdown" position="right">
+                    <Icon icon="doughnut-chart" style={{color: "#a6d940"}}/>
+                  </Tooltip>
+                </Popover>
+              </div>
+            </div>
+            
+          </li>
+        ))}
+      </ul>
+    );
+  }
 
-  const [selectedRow, setSelectedRow] = useState(null);
+  actionsTemplate(rowData) {
+    return (
+      <div className="flex justify-around">
+          <div>
+            <Popover
+            content={
+              <div>
+                <BreakdownChart data_pie={rowData.breakdown.grams} data_table={rowData.breakdown.calories} width={300} height={300} />
+              </div>
+            }
+            position="right"
+          >
+            <Tooltip content="Click to see total breakdown" position="right">
+              <Icon icon="doughnut-chart" style={{color: "#a6d940"}}/>
+            </Tooltip>
+          </Popover>
+        </div>
+        <div>
+          <Tooltip content="Click to remove meal from table" position="right">
+            <Icon icon="trash" intent="danger"/>
+          </Tooltip>
+        </div>
 
-  const handleButtonClick = (rowIndex) => {
-    setSelectedRow(rowIndex);
-  };
+      </div>
+      
+    );
+  }
 
-  return (
-    <>
-      <table {...getTableProps()} style={{ border: '1px solid black', borderCollapse: 'collapse', width: '100%' }}>
-        <thead>
-          {headerGroups.map(headerGroup => (
-            <tr {...headerGroup.getHeaderGroupProps()} style={{ borderBottom: '1px solid black' }}>
-              {headerGroup.headers.map(column => (
-                <th {...column.getHeaderProps()} style={{ padding: '8px', borderRight: '1px solid black' }}>
-                  {column.render('Header')}
-                </th>
-              ))}
-              {/* Add Actions column header */}
-              <th style={{ padding: '8px', borderRight: '1px solid black' }}>Actions</th>
-            </tr>
-          ))}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-          {rows.map((row, index) => {
-            prepareRow(row);
-            return (
-              <tr {...row.getRowProps()} style={{ borderBottom: '1px solid black' }}>
-                {row.cells.map(cell => (
-                  <td {...cell.getCellProps()} style={{ padding: '8px', borderRight: '1px solid black' }}>
-                    {cell.render('Cell')}
-                  </td>
-                ))}
-                <td style={{ padding: '8px', borderRight: '1px solid black', textAlign: 'center', verticalAlign: 'middle' }}>
-                  <Tooltip id={`chart-tooltip-${index}`} />
-                  <a
-                    data-tooltip-id={`chart-tooltip-${index}`}
-                    data-tooltip-content="View calories breakdown"
-                    onClick={() => handleButtonClick(index)}
-                    style={{ display: 'inline-block' }}
-                  >
-                    <i className="fa-solid fa-chart-pie"></i>
-                  </a>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      {selectedRow !== null && (
-        <Modal isOpen={true} onRequestClose={() => setSelectedRow(null)}>
-          <button onClick={() => setSelectedRow(null)}>Close</button>
-          <h2>Caloric Breakdown for {data[selectedRow].mealName}</h2>
-          <BreakdownChart data={data[selectedRow].breakdown} width={500} />
-        </Modal>
-      )}
-    </>
-  );
-};
+  DateTimeTemplate(rowData) {
+    return (
+      <div className="flex justify-around">
+        <div>{new Date(rowData.datetime).toLocaleDateString()}</div>
+        <div>{new Date(rowData.datetime).toLocaleTimeString()}</div>
+      </div>
+      
+    );
+  }
+
+  NameTemplate(rowData) {
+    return (
+      <div className="flex justify-around">
+        <div>{rowData.meal_name}</div>
+      </div>
+      
+    );
+  }
+
+  render() {
+    const { data } = this.props;
+
+    return (
+      <DataTable value={data} 
+        style={{ backgroundColor: '#467c99' }} 
+        size="small" 
+        showGridlines 
+        stripedRows
+        paginator
+        paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks
+        NextPageLink LastPageLink"
+        rows={5}>
+        <Column field="meal_name" header="Meal Name"  body={this.NameTemplate}/>
+        <Column field="datetime" header="Date & Time" body={this.DateTimeTemplate} sortable/>
+        <Column header="Food Items" body={this.foodItemsTemplate} />
+        <Column header="Actions" body={this.actionsTemplate} />
+      </DataTable>
+    );
+  }
+}
 
 export default MealTable;
