@@ -65,7 +65,7 @@ class App extends Component {
   render() {
     const pathname = window.location.pathname;
     return (
-      <Router>
+      <HashRouter>
         {(pathname.search("login") == -1  || pathname.search("register") == -1 || pathname.search("docs")) && 
           <Navigation />
         }
