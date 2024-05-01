@@ -34,7 +34,6 @@ class App extends Component {
 
   setUserDetails = (name, id, loggedIn) => {
     this.setState({ user: { name: name, id: id }, loggedIn: loggedIn, timedOut: false});
-    window.location.replace("/#/dashboard");
   };
 
   clearSession = () => {
