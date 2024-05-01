@@ -108,14 +108,14 @@ class Login extends Component{
             let username = this.state.username;
             let password = this.state.password
 
-            // this.setState({ loading: true });
+            this.setState({ loading: true });
 
-            // setTimeout(() => {
-            // this.setState({ loading: false });
-            // }, 3000);
+            setTimeout(() => {
+            this.setState({ loading: false });
+            }, 3000);
 
 
-            fetch("http://localhost:3001/login", {
+            fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/login`, {
                 method: 'post',
                 headers: {'Content-Type': 'application/json'},
                 credentials: 'include',
@@ -127,7 +127,7 @@ class Login extends Component{
             .then(response => response.json())
             .then(data => {
                 if (data.result == "success"){
-                    this.props.setUser(data.data.username, data.data.id);
+                    this.props.setUserDetails(data.user.username, data.user.id);
                     setTimeout(() => {
                         this.setState({loggedIn: true});
                       }, 3000);
@@ -184,7 +184,7 @@ class Login extends Component{
         );
 
         if (loggedIn) {
-            return <Navigate to="/calories" />;
+            window.location.replace("/dashboard");
         }
     
 
@@ -282,7 +282,7 @@ class Login extends Component{
                                         <Link to="/register" className="f6 link dim db" style={{color: "#FFE39F"}}>Sign Up</Link>
                                     </div>
                                     <div>
-                                        <Button rightIcon="arrow-right" intent="success" text="Login" large={true} disabled={this.loginEnabled()} onClick={this.loginUser}/>
+                                        <Button className="submit-btn" rightIcon="arrow-right" intent="success" text="Login" large={true} disabled={this.loginEnabled()} onClick={this.loginUser}/>
                                     </div>
                                 
                                 </div>

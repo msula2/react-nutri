@@ -14,6 +14,7 @@ import Water from './components/nutrients/water/Water';
 import Register from './components/register/Register';
 import Docs from './components/docs/Docs';
 import Calories from './components/calories/Calories';
+import Recipes from './components/recipes/Recipes';
 
 class App extends Component {
   constructor(){
@@ -23,36 +24,47 @@ class App extends Component {
         name: '',
         id: ''
       },
-      loggedIn : false
-    }
-    fetch("http://localhost:3001/user", {
+      loggedIn : null,
+      timedOut: null
+    };
+
+    this.checkSession();
+  }
+
+
+  setUserDetails = (name, id, loggedIn) => {
+    // localStorage.setItem('user', JSON.stringify({ name, id }));
+    // localStorage.setItem('loggedIn', loggedIn);
+    // localStorage.setItem('timedOut', false);
+    this.setState({ user: { name: name, id: id }, loggedIn: loggedIn, timedOut: false});
+  };
+
+  clearSession = () => {
+    // localStorage.removeItem('user');
+    // localStorage.removeItem('loggedIn');
+    // localStorage.removeItem('timedOut');
+    this.setState({ user: { name: '', id: '' }, loggedIn: false, timedOut: true});
+  };
+
+  checkSession = () => {
+    fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/user`, {
       method: 'get',
-      headers: {'Content-Type': 'application/json'}
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'include'
     })
     .then(response => response.json())
     .then(data => {
-      if (data.result == "logged in"){
-        this.setUserDetails(data.username, data.id);
-        this.setState({loggedIn: true});
-      }
-      else if (data.result == "logged out"){
-        this.state = {
-          user : {
-            name: '',
-            id: ''
-          },
-          loggedIn : false
-        }
-      } else{
+      if (data.loggedIn === true){
+        this.setUserDetails(data.user.username, data.user.id, data.loggedIn);
+      } else if (data.loggedIn === false){
+        this.clearSession();
+      } else {
         console.log(data.error);
       }
-    })
-  }
+    });
+  };
 
-  setUserDetails = (name, id) => {
-    this.setState({user: {name: name, id: id}});
-    this.setState({loggedIn: true});
-  }
+
 
   render() {
     const pathname = window.location.pathname;
@@ -62,10 +74,10 @@ class App extends Component {
           <Navigation />
         }
         <Routes>
-            <Route path="/login" element={<Login setUser={this.setUserDetails}/>} />
+            <Route path="/login" element={<Login setUserDetails={this.setUserDetails}/>} />
             <Route path="/register" element={<Register setUserDetails={this.setUserDetails} />} />
             <Route path="/docs" element={<Docs />} />
-            <Route path="/dashboard" element={<Dashboard user={this.state.user} loggedIn={this.state.loggedIn}/>} />
+            <Route path="/dashboard" element={<Dashboard timedOut={this.state.timedOut}/>} />
             <Route path="/nutrients" element={<Nutrients />} />
             <Route path="/nutrients/carbohydrates" element={<Carbohydrates />} />
             <Route path="/nutrients/protiens" element={<Protiens />} />
@@ -73,7 +85,9 @@ class App extends Component {
             <Route path="/nutrients/vitamins" element={<Vitamins />} />
             <Route path="/nutrients/minerals" element={<Minerals />} />
             <Route path="/nutrients/water" element={<Water />} />
-            <Route path="/calories" element={<Calories user={this.state.user}/>} />
+            <Route path="/calories" element={<Calories />} />
+            <Route path="/recipes" element={<Recipes />} />
+
         </Routes>
       </BrowserRouter>
     );

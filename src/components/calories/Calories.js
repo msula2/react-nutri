@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import MealTable from './MealTable';
 import {columns, food_groups, tracking_options, starches, starch_items} from './calories_data.js';
-import { Card, H3, Button, FormGroup, InputGroup, Tooltip, Icon, MenuItem, NumericInput, Popover, ButtonGroup, OverlayToaster, Toast2} from "@blueprintjs/core";
+import { Card, H3, Button, FormGroup, InputGroup, Tooltip, Icon, MenuItem, NumericInput, Popover, ButtonGroup, OverlayToaster, Toast2, Alert} from "@blueprintjs/core";
 import { Select, MultiSelect} from '@blueprintjs/select';
 import { DateInput3} from "@blueprintjs/datetime2";
 import { nutrients_desc } from '../../descriptions';
@@ -11,6 +11,8 @@ import Title from '../title/Title';
 import About from '../about/About';
 import './Calories.css';
 import BreakdownChart from './BreakdownChart.js';
+import Loader from '../loader/Loader';
+import "./blueprint-datetime.css";
 /**
  * 
  * The Calories component allows the user to track their
@@ -55,6 +57,18 @@ class Calories extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            user: {
+                name: '',
+                id: ''
+            },
+            loggedIn : null,
+            timedOut: null,
+            loading: true,
+            message: '',
+            alert: {
+                isLoading: false,
+                isOpen: true
+            },
             track_method: {label: "Exchange Lists", value: "exchange"},
             meal_name: '',
             datetime: dayjs(),
@@ -88,26 +102,55 @@ class Calories extends Component {
                 duplicate_entry: '',
                 datetime: ''
             }
+            
         };
     }
 
-    componentDidMount() { 
-        const { user } = this.props;
-        fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/user/${user.id}/meals/breakdown`, {
+      setUserDetails = (name, id, loggedIn) => {
+        this.setState({ user: { name: name, id: id }, loggedIn: loggedIn, timedOut: false});
+      };
+    
+      clearSession = () => {
+
+        this.setState({ user: { name: '', id: '' }, loggedIn: false, timedOut: true});
+      };
+
+      checkSession = () => {
+        fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/user`, {
           method: 'get',
+          headers: {'Content-Type': 'application/json'},
           credentials: 'include'
         })
         .then(response => response.json())
         .then(data => {
-          if (data.result === "success") {
-            console.log(data.meals);
-            this.setState({ userMeals: data.meals });
+          if (data.loggedIn === true){
+            this.setUserDetails(data.user.username, data.user.id, data.loggedIn);
+            fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/user/${data.user.id}/meals/breakdown`, {
+                method: 'get',
+                credentials: 'include'
+              })
+              .then(response => response.json())
+              .then(data => {
+                if (data.result === "success") {
+                  this.setState({ userMeals: data.meals });
+                  this.setState({ loading: false });
+                }
+              })
+              .catch(error => {
+                console.error('Error fetching data:', error);
+                this.setState({ loading: false });
+              });
+          } else if (data.loggedIn === false){
+            this.clearSession();
+          } else {
+            console.log(data.error);
           }
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
         });
-      }
+      };
+
+    componentDidMount() { 
+        this.checkSession();
+    }
 
     /**
      * Updates the tracking method for calories based on the onChange event.
@@ -290,7 +333,7 @@ class Calories extends Component {
      */
     addMeal = () => {
         const {ingredients_chosen, meal_name, datetime, ToasterSuccess, ToasterFailed} = this.state;
-        const { user } = this.props;
+        const { user } = this.state;
 
         fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/user/${user.id}/meal/add`, {
             method: 'post',
@@ -310,47 +353,52 @@ class Calories extends Component {
                 this.setState({ ToasterSuccess});
             }
             else{
-                ToasterFailed.show = true;
-                ToasterFailed.message = data.message;
-                this.setState({ ToasterFailed});
+                if(data.loggedIn == null){
+                    ToasterFailed.show = true;
+                    ToasterFailed.message = data.message;
+                    this.setState({ ToasterFailed});
+                }
+                else{
+                    
+                    this.setState({timedOut: true});
+                }
+                
             }
         });
-        // const { meal_name, track_method, food_group, category, ingredients_chosen, data } = this.state;
-        // let newData = [];
-
-        // // Initialize calories
-        // let calories = 0;
-
-        // // Create a new ingredient object
-        // let new_meal = {
-        //     id: data.length + 1,
-        //     mealName: meal_name,
-        //     ingredients: [ingredients_chosen.map(item => item.label)],
-        //     calories: 0,
-        //     breakdown: [
-        //         { name: 'Protein', value: 30 },
-        //         { name: 'Carbohydrates', value: 200 },
-        //         { name: 'Fat', value: 120 }
-        //       ]
-        // };
-
-
-        // // Calculate calories based on the selected food group
-        // if (food_group.value === "starch") {
-        //     new_meal.calories = 80;
-        // }
-
-        // // Check if the meal already exists in the data
-        // let meal_exists = data.filter((item) => item.mealName === meal_name);
-
-        // // If meal does not exist, create a new meal with the new ingredient
-        // if (meal_exists.length === 0) {
-        //     newData = [...data, new_meal];
-        // }
-
-        // // Update the state with the new meal data
-        // this.setState({ data: newData });
+        
     }
+
+    deleteMeal = (mealId) => {
+        const { user } = this.state;
+      
+        fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/user/${user.id}/meal/${mealId}/delete`, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.result === "success") {
+            const { ToasterSuccess } = this.state;
+            ToasterSuccess.show = true;
+            ToasterSuccess.message = data.message;
+            this.setState({ ToasterSuccess });
+          } else {
+            const { ToasterFailed } = this.state;
+            ToasterFailed.show = true;
+            ToasterFailed.message = data.message;
+            this.setState({ ToasterFailed });
+          }
+        })
+        .catch(error => {
+          console.error('Error deleting meal:', error);
+          const { ToasterFailed } = this.state;
+          ToasterFailed.show = true;
+          ToasterFailed.message = 'Error deleting meal';
+          this.setState({ ToasterFailed });
+        });
+      };
+      
 
     servingChange = (event) => {
         const size = event;
@@ -455,6 +503,24 @@ class Calories extends Component {
         );
     };
 
+    handleMoveConfirm = () => {
+        let alert = {...this.state.alert};
+        alert.isLoading = true;
+        this.setState({ alert });
+
+        
+        const close = () => {
+            let alert = {
+                isLoading: false,
+                isOpen: false
+            }
+            this.setState({ alert });
+            window.location.replace("/login");
+        };
+        setTimeout(close, 2000);
+    };
+
+
     /**
      * Displays the components of the Calories Module
      *
@@ -470,33 +536,68 @@ class Calories extends Component {
 
 
     render() {
-        const {meal_name, meals, food_group, category, categories, ingredient, ingredients, ingredients_chosen,  errors, serving_unit, serving_size, grams_breakdown,calories_breakdown, userMeals, dateTime, ToasterSuccess, ToasterFailed} = this.state;
+        const {meal_name, meals, food_group, category, categories, ingredient, ingredients, ingredients_chosen,  errors, serving_unit, serving_size, grams_breakdown,calories_breakdown, userMeals, dateTime, ToasterSuccess, ToasterFailed, loading, message, alert, timedOut} = this.state;
+        
+
 
         return (
             <div className='vw-100 vh-100 d-flex flex-column justify-center items-center'>
+                {timedOut ? 
+                (
+                    <Alert
+                        style={{backgroundColor: "#6eadca", color: "#ffe39f", fontWeight: "bold"}}    
+                        confirmButtonText="Login"
+                        intent={"success"}
+                        isOpen={alert.isOpen}
+                        loading={alert.isLoading}
+                        onConfirm={this.handleMoveConfirm}
+                    >
+                    <p>
+                        Your session has ended, please log back in again
+                    </p>
+                    </Alert>
+                )
+                :
+                (
+                <>
+                {loading && <Loader message={message}/>}
                 {ToasterSuccess.show &&
-                <OverlayToaster className="mt5">
+                (<OverlayToaster className="mt5">
                     <Toast2 
                     icon="tick-circle" 
                     intent="success" 
-                    message={ToasterSuccess.message} 
+                    message={ToasterSuccess.message}
+                    isCloseButtonShown={false}
+                    action={{
+                        text: "Refresh",
+                        onClick: () => window.location.reload() 
+                    }}
+                    timeout={0}
+                    
                     />
                 </OverlayToaster>
-                }
+                )}
                 {ToasterFailed.show &&
-                <OverlayToaster className="mt5">
+                (<OverlayToaster className="mt5">
                     <Toast2 
                     icon="warning-sign" 
                     intent="danger" 
                     message={ToasterFailed.message} 
+                    isCloseButtonShown={false}
+                    action={{
+                        text: "Refresh",
+                        onClick: () => window.location.reload() 
+                    }}
+                    timeout={0}
+                    
                     />
                 </OverlayToaster>
-                }
+                )}
                 <Title text="Calories" color="#FFE39F" />
                 
                 <div className="flex justify-center">
                     <div className="mt5 w-80">
-                        <Card interactive={true} elevation={4} className="card-content" style={{paddingTop: "0px", paddingBottom: "0px"}}>
+                        <Card interactive={true} elevation={4} className="card-content" style={{paddingTop: "0px", paddingBottom: "2rem"}}>
                             <div className="flex h-100 w-100">
                                 <div className="w-40 mt3">
                                     <H3 style={{padding: "2rem"}}>Add Meal Information</H3>
@@ -513,6 +614,7 @@ class Calories extends Component {
                                                     intent= {errors.meal_name === '' ? "success": "danger"}
                                                     large={true}
                                                     value={meal_name}
+                                                    className="calories"
                                                     
                                                     
                                                 />
@@ -545,7 +647,7 @@ class Calories extends Component {
                                                         dateFnsFormat={"yyyy-MM-dd HH:mm:ss"}
                                                         timePickerProps={{ showArrowButtons:true, useAmPm: true}}
                                                         value={dateTime}
-                                                        className={"bp5-intent-success bp5-large"}
+                                                        className={"bp5-intent-success bp5-large calories"}
                                                     />
                                                     
                                                 </div>
@@ -671,7 +773,7 @@ class Calories extends Component {
                                                         content={
                                                             <div>
                                                                  <div>
-                                                                    <BreakdownChart data_pie={grams_breakdown} data_table={calories_breakdown} width={300} height={300}/>
+                                                                    <BreakdownChart data_pie={grams_breakdown} data_table={calories_breakdown} serving_size={serving_size} serving_unit={serving_unit} width={300} height={300}/>
                                                                  </div>
                                                                  
                                                             </div>
@@ -733,8 +835,13 @@ class Calories extends Component {
                                                 
                                             </div>
                                         </FormGroup>
-                                        <div className="flex justify-end pa3">
-                                        <div className="w-70">
+                                        <FormGroup
+                                            label=""
+                                            inline={true}
+                                            className="white bp5-text-large"
+                                        >
+                                            <div className="flex items-center justify-end mr6">
+                                                
                                             <Tooltip content="Click to add meal to the table" placement="right">
                                                 <Button className={"submit-btn"} 
                                                 rightIcon="plus" intent="success" 
@@ -742,9 +849,9 @@ class Calories extends Component {
                                                 disabled={this.addEnabled()}
                                                 onClick={this.addMeal}/>
                                             </Tooltip>
-                                        </div>
-                                       
-                                        </div>   
+                                                
+                                            </div>
+                                        </FormGroup>
                                         
                                     </div>
                                     
@@ -752,7 +859,7 @@ class Calories extends Component {
                                 <div className="w-60 mt3">
                                     <H3 style={{padding: "2rem", paddingLeft: "0px"}}>Meals Table</H3>
                                     <div className="pa3 pl0">
-                                        <MealTable data={userMeals} />
+                                        <MealTable data={userMeals} deleteMeal={this.deleteMeal} />
                                     </div>
                                     
                                 </div>
@@ -761,142 +868,12 @@ class Calories extends Component {
                         </Card>
                     </div>
                 </div>
+                </>
+                )}
+                
             </div>
 
             
-            
-            
-            // <div className="mt4">
-            //     <div className="fl w-50">
-            //         <div className="detailed-card">
-            //             <h1 className="detailed-title">Ingredients</h1>
-            //             <div className="card-fields">
-            //                 <div className="field-row">
-            //                     <div className="field-label">
-            //                         <label>Meal Name</label>
-            //                     </div>
-            //                     <div className="field-value">
-            //                         <input
-            //                             className="field-input"
-            //                             type="text"
-            //                             value={meal_name}
-            //                             onChange={this.nameChange}
-            //                         />
-            //                         {errors.meal_name && 
-            //                             <div className="err" >
-            //                                 <a data-tooltip-id="meal_name_err" data-tooltip-content={errors.meal_name}>
-            //                                     <i className="fa-solid fa-circle-exclamation error-icon"></i>
-            //                                 </a>
-            //                                 <Tooltip id="meal_name_err" />
-            //                             </div>
-            //                         }
-                                    
-            //                     </div>
-            //                 </div>
-            //                 <div className="field-row">
-            //                     <div className="field-label">
-            //                         <label>Time</label>
-            //                     </div>
-            //                     <div className="field-value">
-            //                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-            //                         <DateTimePicker
-            //                             value={datetime}
-            //                             onChange={this.dateChange}
-            //                             className="w-80"
-            //                         />
-            //                     </LocalizationProvider>                             
-            //                     </div>
-            //                 </div>
-            //                 <div className="field-row">
-            //                     <div className="field-label">
-            //                         <label>Method of tracking</label>
-            //                     </div>
-            //                     <div className="field-value">
-            //                         <Select
-            //                             value={track_method}
-            //                             onChange={this.trackChange}
-            //                             options={tracking_options}
-            //                             className="w-80"
-            //                         />
-            //                     </div>
-            //                 </div>
-            //                 {this.state.track_method.value == 'exchange' ? 
-            //                 <div className="w-100">
-            //                     <div className="field-row">
-            //                         <div className="field-label">
-            //                             <label>Food Group</label>
-            //                         </div>
-            //                         <div className="field-value">
-            //                             `<Select
-            //                                 value={food_group}
-            //                                 onChange={this.groupChange}
-            //                                 options={food_groups}
-            //                                 className="w-80"
-            //                             />`
-            //                         </div>
-            //                     </div>
-            //                     {categories.length != 0 &&
-            //                     <div className="field-row">
-            //                         <div className="field-label">
-            //                             <label>Category</label>
-            //                         </div>
-            //                         <div className="field-value">
-            //                             <Select
-            //                                 value={category}
-            //                                 onChange={this.categoryChange}
-            //                                 options={categories}
-            //                                 className="w-80"
-            //                             />
-            //                         </div>
-            //                     </div>
-            //                     }
-            //                     <div className="field-row">
-            //                         <div className="field-label">
-            //                             <label>Ingredients</label>
-            //                         </div>
-            //                         <div className="field-value">
-            //                             <Select
-            //                                 isMulti
-            //                                 name="ingredients"
-            //                                 onChange={this.ingredientsChange}
-            //                                 options={ingredients}
-            //                                 className="basic-multi-select, w-80"
-            //                                 classNamePrefix="select"
-                                            
-            //                             />
-            //                             {errors.ingredients_chosen && 
-            //                                 <div className="err" >
-            //                                     <a data-tooltip-id="ingredients_chosen_err" data-tooltip-content={errors.ingredients_chosen}>
-            //                                         <i className="fa-solid fa-circle-exclamation error-icon"></i>
-            //                                     </a>
-            //                                     <Tooltip id="ingredients_chosen_err" />
-            //                                 </div>
-            //                             }
-            //                         </div>
-                                    
-            //                     </div>
-            //                 </div>
-                            
-            //                 :
-            //                 <div>To do</div>
-            //                 }
-            //             </div>
-            //             <div className="card-tools">
-            //                 <button 
-            //                     className="btn-submit"
-            //                     disabled={this.addEnabled()}
-            //                     onClick={this.addMeal}><i className="fa-solid fa-plus"></i> Add
-            //                 </button>
-            //             </div>
-            //         </div>
-            //     </div>
-            //     <div className="fl w-50">
-            //         <div className="detailed-card">
-            //             <h1 className="detailed-title">Meal Information</h1>
-            //             <MealTable columns={columns} data={data} />
-            //         </div>
-            //     </div>
-            // </div>
         );
     }
 }

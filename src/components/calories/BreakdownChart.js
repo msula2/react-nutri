@@ -1,10 +1,12 @@
 import React from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, Text } from 'recharts';
 
-const BreakdownChart = ({ data_pie, data_table, width, height }) => {
+const BreakdownChart = ({ data_pie, data_table, serving_unit, serving_size, width, height }) => {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
   const legendHeight = 50;
   const textSpacing = 15; 
+
+  console.log("Data_pie", data_pie);
 
   return (
     <div className="flex flex-column items-center">
@@ -18,6 +20,15 @@ const BreakdownChart = ({ data_pie, data_table, width, height }) => {
           fill="#666"
         >
           Caloric Breakdown
+        </text>
+          <text
+          x={width / 2}
+          y={50}
+          textAnchor="middle"
+          fontSize="14"
+          fill="#666"
+        >
+          per {serving_size} {serving_unit}
         </text>
         <Pie
           data={data_pie}

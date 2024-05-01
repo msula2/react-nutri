@@ -294,6 +294,7 @@ class Register extends Component {
               <div>
                 <Button
                   rightIcon="arrow-right"
+                  className="submit-btn"
                   intent="success"
                   text="Register"
                   large={true}

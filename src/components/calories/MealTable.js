@@ -8,6 +8,12 @@ import "primereact/resources/primereact.min.css";
 import './MealTable.css'; // Import your custom CSS file
 
 class MealTable extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+    this.actionsTemplate = this.actionsTemplate.bind(this);
+  }
+  
   foodItemsTemplate(rowData) {
     return (
       <ul>
@@ -21,7 +27,7 @@ class MealTable extends React.Component {
                 <Popover
                   content={
                     <div>
-                      <BreakdownChart data_pie={foodItem.breakdown.grams} data_table={foodItem.breakdown.calories} width={300} height={300} />
+                      <BreakdownChart data_pie={foodItem.breakdown.grams} data_table={foodItem.breakdown.calories} serving_size={foodItem.quantity} serving_unit={foodItem.serving_unit} width={300} height={300} />
                     </div>
                   }
                   position="right"
@@ -40,6 +46,10 @@ class MealTable extends React.Component {
   }
 
   actionsTemplate(rowData) {
+    const handleDeleteMeal = () => {
+      this.props.deleteMeal(rowData.meal_id);
+    };
+    
     return (
       <div className="flex justify-around">
           <div>
@@ -58,7 +68,7 @@ class MealTable extends React.Component {
         </div>
         <div>
           <Tooltip content="Click to remove meal from table" position="right">
-            <Icon icon="trash" intent="danger"/>
+            <Icon icon="trash" intent="danger" onClick={handleDeleteMeal}/>
           </Tooltip>
         </div>
 
@@ -66,6 +76,7 @@ class MealTable extends React.Component {
       
     );
   }
+
 
   DateTimeTemplate(rowData) {
     return (
@@ -86,6 +97,7 @@ class MealTable extends React.Component {
     );
   }
 
+  
   render() {
     const { data } = this.props;
 
@@ -98,7 +110,7 @@ class MealTable extends React.Component {
         paginator
         paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks
         NextPageLink LastPageLink"
-        rows={5}>
+        rows={3}>
         <Column field="meal_name" header="Meal Name"  body={this.NameTemplate}/>
         <Column field="datetime" header="Date & Time" body={this.DateTimeTemplate} sortable/>
         <Column header="Food Items" body={this.foodItemsTemplate} />
