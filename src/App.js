@@ -34,10 +34,12 @@ class App extends Component {
 
   setUserDetails = (name, id, loggedIn) => {
     this.setState({ user: { name: name, id: id }, loggedIn: loggedIn, timedOut: false});
+    window.location.replace("/#/dashboard");
   };
 
   clearSession = () => {
     this.setState({ user: { name: '', id: '' }, loggedIn: false, timedOut: true});
+    window.location.replace("/#/login");
   };
 
   checkSession = () => {
@@ -62,10 +64,9 @@ class App extends Component {
 
   render() {
     const pathname = window.location.pathname;
-    console.log("Pathname: ", pathname);
     return (
-      <HashRouter>
-        {pathname !== "/login" && pathname !== "/register" && pathname !== "/docs" && 
+      <Router>
+        {(pathname.search("login") == -1  || pathname.search("register") == -1 || pathname.search("docs")) && 
           <Navigation />
         }
         <Routes>

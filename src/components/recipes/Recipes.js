@@ -100,7 +100,7 @@ class Recipes extends Component{
                 isOpen: false
             }
             this.setState({ alert });
-            window.location.replace("/login");
+            window.location.replace("/#/login");
         };
         setTimeout(close, 2000);
     };

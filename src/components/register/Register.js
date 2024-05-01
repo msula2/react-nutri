@@ -145,7 +145,7 @@ class Register extends Component {
               this.setState({ username: '', password: '', email: '', errors, dirty });
             } else {
               setTimeout(() => {
-                window.location.replace("/login");
+                window.location.replace("/#/login");
               }, 3000);
               
             }
