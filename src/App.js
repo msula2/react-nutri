@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import './App.css';
 import Navigation from './components/navigation/Navigation';
 import Nutrients from "./components/nutrients/Nutrients";
@@ -33,16 +33,10 @@ class App extends Component {
 
 
   setUserDetails = (name, id, loggedIn) => {
-    // localStorage.setItem('user', JSON.stringify({ name, id }));
-    // localStorage.setItem('loggedIn', loggedIn);
-    // localStorage.setItem('timedOut', false);
     this.setState({ user: { name: name, id: id }, loggedIn: loggedIn, timedOut: false});
   };
 
   clearSession = () => {
-    // localStorage.removeItem('user');
-    // localStorage.removeItem('loggedIn');
-    // localStorage.removeItem('timedOut');
     this.setState({ user: { name: '', id: '' }, loggedIn: false, timedOut: true});
   };
 
@@ -68,8 +62,9 @@ class App extends Component {
 
   render() {
     const pathname = window.location.pathname;
+    console.log("Pathname: ", pathname);
     return (
-      <BrowserRouter>
+      <HashRouter>
         {pathname !== "/login" && pathname !== "/register" && pathname !== "/docs" && 
           <Navigation />
         }
@@ -89,7 +84,7 @@ class App extends Component {
             <Route path="/recipes" element={<Recipes />} />
 
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     );
   }
 }

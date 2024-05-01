@@ -184,7 +184,7 @@ class Login extends Component{
         );
 
         if (loggedIn) {
-            window.location.replace("/dashboard");
+            window.location.replace("/#/dashboard");
         }
     
 
