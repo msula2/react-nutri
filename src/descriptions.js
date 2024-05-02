@@ -101,3 +101,11 @@ export const healthtips_desc = `Here, you'll find a wealth of information coveri
                                 and seasonal wellness tips. Whether you're looking to fine-tune your diet, kickstart a new fitness regimen, boost your mood, or 
                                 navigate the changing seasons with ease, you've come to the right place. Our aim is to empower you with practical advice and insights to help
                                  you live your healthiest, happiest life. So, dive in and discover how to optimize your health and vitality, one tip at a time!`
+
+export const recipes_desc = `Our recipes aren't just about taste; they're also packed with essential nutrients to support your health and well-being. 
+                            We believe in the power of food to nourish both body and soul. That's why each recipe is thoughtfully crafted to provide a balance of flavors and 
+                            nutrients, ensuring that you not only enjoy your meals but also fuel your body with goodness. Follow the steps below to get started!`
+
+export const calories_desc = `Welcome to the Calories Module! Here, we use the exchange list method to calculate calorie intake, aiming to help you manage your consumption effectively for your health and wellness goals.
+                             This method simplifies calorie counting by grouping foods based on their macronutrient content. Each group is assigned a set number of exchanges, representing portion sizes with similar calorie and nutrient content.
+`

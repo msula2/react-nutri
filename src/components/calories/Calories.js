@@ -1,14 +1,13 @@
 import React, { Component } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import MealTable from './MealTable';
-import {columns, food_groups, tracking_options, starches, starch_items} from './calories_data.js';
+import {food_groups, starches, starch_items} from './calories_data.js';
 import { Card, H3, Button, FormGroup, InputGroup, Tooltip, Icon, MenuItem, NumericInput, Popover, ButtonGroup, OverlayToaster, Toast2, Alert} from "@blueprintjs/core";
 import { Select, MultiSelect} from '@blueprintjs/select';
 import { DateInput3} from "@blueprintjs/datetime2";
-import { nutrients_desc } from '../../descriptions';
-import nutrients_logo from "../../assets/imgs/nutrients.png";
 import Title from '../title/Title';
 import About from '../about/About';
+import { calories_desc } from '../../descriptions';
 import './Calories.css';
 import BreakdownChart from './BreakdownChart.js';
 import Loader from '../loader/Loader';
@@ -541,7 +540,7 @@ class Calories extends Component {
 
 
         return (
-            <div className='vw-100 vh-100 d-flex flex-column justify-center items-center'>
+            <div className='w-100 d-flex flex-column justify-center items-center'>
                 {timedOut ? 
                 (
                     <Alert
@@ -593,14 +592,29 @@ class Calories extends Component {
                     />
                 </OverlayToaster>
                 )}
-                <Title text="Calories" color="#FFE39F" />
-                
-                <div className="flex justify-center">
-                    <div className="mt5 w-80">
-                        <Card interactive={true} elevation={4} className="card-content" style={{paddingTop: "0px", paddingBottom: "2rem"}}>
-                            <div className="flex h-100 w-100">
-                                <div className="w-40 mt3">
-                                    <H3 style={{padding: "2rem"}}>Add Meal Information</H3>
+                 <div className="flex">
+                    <div className="w-60">
+                        <Title text="Calories" color="#FFE39F" />
+                        <About text={calories_desc} className="pb0"/>
+                        <div style={{paddingLeft: "2rem", paddingRight: "2rem", marginLeft: "4rem"}}>
+                            <h2>Instructions <Icon icon="info-sign" className="mb1 ml1"/> </h2>
+                            <ul className="w-60">
+                            <li>Create a meal by assigning it a name and time</li>
+                            <li>For each meal you can add the ingredients/food items present in it</li>
+                            <li>The caloric breakdown for each ingredient can be checked by hovering over the chart icon which is displayed</li>
+                            <li>Upon clicking add, the meal will be added to the table and will be used to track your caloric intake!</li>
+                            </ul>
+                            <h2>Meals Table <Icon icon="panel-table" className="mb1 ml1"/> </h2>
+                            <div className="pa3 pl0 w-90">
+                                <MealTable data={userMeals} deleteMeal={this.deleteMeal} />
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div className="w-40 items-center" style={{marginTop: "auto"}}>
+                        <Card interactive={true} elevation={4} className="card-content w-80 mt5">
+                        <div className="w-100 mt3">
+                                    <H3>Add Meal Information</H3>
                                     <div className="pa4 pb0">
                                         <FormGroup
                                         label="Meal Name"
@@ -641,7 +655,6 @@ class Calories extends Component {
                                                         rightElement={
                                                             true && <Icon icon="globe" intent="primary" style={{ padding: "11px 7px" }} />
                                                         }
-                                                        timePickerProps={true}
                                                         showTimePickerArrows={true}
                                                         useAmPm={true}
                                                         dateFnsFormat={"yyyy-MM-dd HH:mm:ss"}
@@ -835,39 +848,25 @@ class Calories extends Component {
                                                 
                                             </div>
                                         </FormGroup>
-                                        <FormGroup
-                                            label=""
-                                            inline={true}
-                                            className="white bp5-text-large"
-                                        >
-                                            <div className="flex items-center justify-end mr6">
+                                        <div className="flex items-center justify-end mr2">
                                                 
-                                            <Tooltip content="Click to add meal to the table" placement="right">
-                                                <Button className={"submit-btn"} 
-                                                rightIcon="plus" intent="success" 
-                                                text="Add" large={true} 
-                                                disabled={this.addEnabled()}
-                                                onClick={this.addMeal}/>
-                                            </Tooltip>
-                                                
-                                            </div>
-                                        </FormGroup>
+                                        <Tooltip content="Click to add meal to the table" placement="right">
+                                            <Button className={"submit-btn"} 
+                                            rightIcon="plus" intent="success" 
+                                            text="Add" large={true} 
+                                            disabled={this.addEnabled()}
+                                            onClick={this.addMeal}/>
+                                        </Tooltip>
+                                            
+                                        </div>
                                         
                                     </div>
                                     
                                 </div>
-                                <div className="w-60 mt3">
-                                    <H3 style={{padding: "2rem", paddingLeft: "0px"}}>Meals Table</H3>
-                                    <div className="pa3 pl0">
-                                        <MealTable data={userMeals} deleteMeal={this.deleteMeal} />
-                                    </div>
-                                    
-                                </div>
-
-                            </div>
                         </Card>
+                        
                     </div>
-                </div>
+                 </div>
                 </>
                 )}
                 

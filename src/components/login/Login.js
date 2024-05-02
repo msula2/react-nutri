@@ -240,7 +240,7 @@ class Login extends Component{
                                             value={username}
                                         />
                                         {errors.username && 
-                                        <Tooltip content={errors.username} placement="right" isOpen={true}>
+                                        <Tooltip content={errors.username} placement="right">
                                             <i className="fa-solid fa-circle-exclamation error-icon ml3" ></i>
                                         </Tooltip>
                                         
@@ -266,7 +266,7 @@ class Login extends Component{
                                             value={password}
                                         />
                                         {errors.password && 
-                                        <Tooltip content={errors.password} placement="right" isOpen={true} hoverCloseDelay={1000}>
+                                        <Tooltip content={errors.password} placement="right" hoverCloseDelay={1000}>
                                             <i className="fa-solid fa-circle-exclamation error-icon ml3" ></i>
                                         </Tooltip>
                                         

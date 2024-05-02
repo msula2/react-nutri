@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import Title from '../title/Title';
 import { Omnibar } from "@blueprintjs/select";
-import { Card, H4, Button, FormGroup, InputGroup, Tooltip, Drawer, Icon, MenuItem, NumericInput, Popover, ButtonGroup, OverlayToaster, Toast2, Alert} from "@blueprintjs/core";
-import { Select, MultiSelect} from '@blueprintjs/select';
+import { Card, H4, Button, Drawer, Icon, MenuItem, ButtonGroup, OverlayToaster, Toast2, Alert} from "@blueprintjs/core";
 import "./Recipes.css";
+import About from '../about/About';
 import Loader from '../loader/Loader';
 import SearchRecipeUI from './SearchRecipeUI';
 import AddRecipeUI from './AddRecipeUI';
+import { recipes_desc } from '../../descriptions';
 
 
 
@@ -224,8 +225,16 @@ class Recipes extends Component{
         this.setState({isSearchOpen: true});
     }
 
+    handleSearchClose = () => {
+        this.setState({isSearchOpen: false});
+    }
+
     openDeleteBar = () => {
         this.setState({isSearchDeleteOpen: true});
+    }
+
+    handleDeleteClose = () => {
+        this.setState({isSearchDeleteOpen: false});
     }
 
     openAddRecipe = () => {
@@ -375,11 +384,23 @@ class Recipes extends Component{
                     />
                 </OverlayToaster>
                 )}
-                <Title text={`Recipes`} />
-                <div className="flex justify-center">
-                    <div className="mt5 w-80 h-80 flex">
-                        <div className="w-20">   
-                            <Card interactive={true} elevation={4} className="card-content flex items-center justify-center" style={{height: "300px"}}>
+                <div className="flex">
+                <div className="w-60">
+                    <Title text={`Recipes`} />
+                    <About text={recipes_desc}/>
+                    <div style={{paddingLeft: "2rem", paddingRight: "2rem", marginLeft: "4rem"}}>
+                        <h2>Instructions <Icon icon="info-sign" className="mb1 ml1"/> </h2>
+                        <ul className="w-60">
+                        <li><strong className="mr2">Search Recipes:</strong>Explore our database of recipes that are designed to be packed with nutrients. Selecting a recipe will show details regarding its ingredients, the calories present in them, the instructions for preparing them. Click on the Search Recipes button to get started!</li>
+                        <li><strong className="mr2">Add Recipes:</strong>Unable to find a recipe you are looking for ? You can create a personalized recipe using the Add Recipe button. Create a recipe, add ingredients and the method of preperation!</li>
+                        <li><strong className="mr2">Delete Recipes:</strong>Added the wrong recipe by mistake, you can delete it using the Delete Recipe button!</li>
+                        </ul>
+                    </div>
+                </div>
+                <div className="flex items-center w-40">
+                    <div className="mt5 flex">
+                        <div>   
+                            <Card interactive={true} elevation={4} className="card-content flex items-center justify-center" style={{height: "300px", width: "300px"}}>
                             <div>
                                 <ButtonGroup fill={true} large={true} vertical={true}>
                                     <Button className="customButton submit-btn" icon={<Icon icon="database" intent="primary" style={{color: "white"}} />} text="Search for a recipe" onClick={this.openSearchBar}/>
@@ -396,6 +417,8 @@ class Recipes extends Component{
                                 onItemSelect={this.handleItemSelectSearch}
                                 overlayProps={{ hasBackdrop: true}}
                                 resetOnSelect={true}
+                                onClose={this.handleSearchClose}
+                                noResults={<MenuItem disabled={true} text="No results." />}
                             />
                             <Omnibar
                                 isOpen={isSearchDeleteOpen}
@@ -406,6 +429,8 @@ class Recipes extends Component{
                                 onItemSelect={this.handleItemDeleteSearch}
                                 overlayProps={{ hasBackdrop: true}}
                                 resetOnSelect={true}
+                                onClose={this.handleDeleteClose}
+                                noResults={<MenuItem disabled={true} text="No results." />}
                             />
                             {showUi.deleteRecipe &&
                             <Alert
@@ -465,6 +490,10 @@ class Recipes extends Component{
                     </div>
                     
                 </div>
+                </div>
+                
+                
+               
                  </>
                 )}  
             </div>
