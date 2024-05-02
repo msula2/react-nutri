@@ -611,7 +611,7 @@ class Calories extends Component {
                         </div>
                         
                     </div>
-                    <div className="w-40 items-center" style={{marginTop: "auto"}}>
+                    <div className="w-40 items-center" style={{marginBottom: "auto"}}>
                         <Card interactive={true} elevation={4} className="card-content w-80 mt5">
                         <div className="w-100 mt3">
                                     <H3>Add Meal Information</H3>
