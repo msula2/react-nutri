@@ -249,7 +249,7 @@ a:focus{
 li::marker{
   color: #a6d940;
 }
-li{
+li:not(.bp5-popover-content li){
   margin-top: 1rem;
   color: #ffffffd6;
   font-size: 16px;
