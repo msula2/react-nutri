@@ -105,7 +105,7 @@ class HealthTips extends Component {
       <div className='vw-100 d-flex flex-column justify-center items-center' style={{display: loading? 'none' : ''}}>
           <Title text="Daily Health Tips" color="#FFE39F" />
           <About text={healthtips_desc}/>
-          <div className="health-tips-container vw-100 vh-100">
+          <div className="health-tips-container vw-100">
             <div className="flex items-center"> 
               <section className="tips-section w-60">
                 <h2>Diet Advice <Icon icon="lightbulb" className="yellow mb1 ml1"/> </h2>
