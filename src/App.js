@@ -15,6 +15,7 @@ import Register from './components/register/Register';
 import Docs from './components/docs/Docs';
 import Calories from './components/calories/Calories';
 import Recipes from './components/recipes/Recipes';
+import HealthTips from './components/healthtips/HealthTips';
 
 class App extends Component {
   constructor(){
@@ -25,11 +26,37 @@ class App extends Component {
         id: ''
       },
       loggedIn : null,
-      timedOut: null
+      timedOut: null,
+      active:  {
+        nutrients: false,
+        calories: false,
+        recipes: false,
+        healthtips: false
+      }
     };
-
     this.checkSession();
   }
+
+
+  setNavigationActive = (pathname) => {
+    let newActiveState = {
+      nutrients: false,
+      calories: false,
+      recipes: false,
+      healthtips: false
+    };
+    if (pathname.includes("nutrients")) {
+      newActiveState.nutrients = true;
+    } else if (pathname.includes("calories")) {
+      newActiveState.calories = true;
+    } else if (pathname.includes("recipes")) {
+      newActiveState.recipes = true;
+    } else if (pathname.includes("health-tips")) {
+      newActiveState.healthtips = true;
+    }
+
+    this.setState({ active: newActiveState });
+  };
 
 
   setUserDetails = (name, id, loggedIn) => {
@@ -60,13 +87,14 @@ class App extends Component {
   };
 
 
-
   render() {
-    const pathname = window.location.pathname;
+    const pathname = window.location.hash;
+    this.setNavigationActive(pathname);
+    const {active} = this.state
     return (
       <HashRouter>
-        {(pathname.search("login") == -1  || pathname.search("register") == -1 || pathname.search("docs")) && 
-          <Navigation />
+        {(!pathname.includes("login") && !pathname.includes("register") && !pathname.includes("docs")) && 
+          <Navigation active={active}/>
         }
         <Routes>
             <Route path="/login" element={<Login setUserDetails={this.setUserDetails}/>} />
@@ -82,6 +110,7 @@ class App extends Component {
             <Route path="/nutrients/water" element={<Water />} />
             <Route path="/calories" element={<Calories />} />
             <Route path="/recipes" element={<Recipes />} />
+            <Route path="/health-tips" element={<HealthTips />} />
 
         </Routes>
       </HashRouter>

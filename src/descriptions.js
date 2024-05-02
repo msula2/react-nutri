@@ -96,3 +96,8 @@ export const water_desc = `Water plays a variety of vital roles in the human bod
                             Water provides lubrication to joints and soft tissues, helping to reduce friction and keep joints flexible. Adequate hydration keeps skin moist, 
                             elastic and healthy-looking. Water participates in chemical reactions within cells, is part of the cell's structure, and is vital to the cell's survival and function. 
                             Maintaining proper fluid intake is very important to maintain health and promote the proper functioning of various body systems.`
+
+export const healthtips_desc = `Here, you'll find a wealth of information covering every aspect of well-being, from dietary guidance to exercise routines, mental health strategies, 
+                                and seasonal wellness tips. Whether you're looking to fine-tune your diet, kickstart a new fitness regimen, boost your mood, or 
+                                navigate the changing seasons with ease, you've come to the right place. Our aim is to empower you with practical advice and insights to help
+                                 you live your healthiest, happiest life. So, dive in and discover how to optimize your health and vitality, one tip at a time!`

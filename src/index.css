@@ -179,8 +179,12 @@ h4{
   background-color: #2d5c75 !important;
 }
 
+a:focus{
+  outline: none !important;
+  outline-offset: 0px !important;
+}
+
 .bp5-navbar-divider {
-  border-left: 2px solid rgb(166, 217, 64) !important;
   height: 50px !important;
 }
 
@@ -236,4 +240,24 @@ h4{
 
 .bp5-input-group{
   width: 70% !important;
+}
+
+.bp5-navbar-divider{
+  margin-right: 0px !important;
+  margin-left: 0px !important;
+}
+li::marker{
+  color: #a6d940;
+}
+li{
+  margin-top: 1rem;
+  color: #ffffffd6;
+  font-size: 16px;
+}
+.bp5-divider{
+  background: #a6d940;
+}
+
+h1, h2{
+  color: #ffe39f !important;
 }
