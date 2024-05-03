@@ -1,6 +1,24 @@
 import React, { Component } from 'react';
 import './Loader.css'; // Import CSS for styling
 
+
+/**
+ * 
+ * The Loader component displays the overlay and loader
+ * 
+ * @property {Array<string>} letters - An array containing letters.
+ * @property {number} currentLetterIndex - The index of the current letter in the array.
+ * 
+ * 
+ * 
+ * @author Hamdan Sulaiman
+ *
+ * @example 
+ * <Loader />
+ *
+ */
+
+
 class Loader extends Component {
   constructor(props) {
     super(props);
@@ -9,6 +27,15 @@ class Loader extends Component {
       currentLetterIndex: 0,
     };
   }
+
+
+  /**
+   * On mounting the componenet, it splits the word Nutri into seprate letters and displays them
+   * 
+   * @instance
+   * @memberOf Diet
+   * @method componentDidMount
+   */
 
   componentDidMount() {
     const text = 'Nutri.';
@@ -27,6 +54,20 @@ class Loader extends Component {
       currentLetterIndex: (prevState.currentLetterIndex + 1) % prevState.letters.length,
     }));
   };
+
+
+    /**
+     * Displays the components of the Loader Module
+     *
+     * @summary This method renders the components of the Loader Module.
+     * 
+     * @instance
+     * @memberOf Loader
+     * @method render
+     * 
+     * @returns {JSX.Element} The JSX elements representing the rendered components.
+     * 
+     */
 
   render() {
     const { letters, currentLetterIndex } = this.state;
