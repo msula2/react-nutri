@@ -12,10 +12,14 @@ export const tracking_options = [
 
 export const food_groups = [
     {label: "Starch/Bread", value: "starch"},
-    {label: "Meat", value: "meat"},
+    {label: "Lean Meat", value: "meat_lean"},
+    {label: "Medium Fat Meat", value: "meat_mfat"},
+    {label: "High Fat Meat", value: "meat_hfat"},
     {label: "Vegetable", value: "vegetable"},
     {label: "Fruit", value: "fruit"},
-    {label: "Milk", value: "milk"},
+    {label: "Skim Milk", value: "milk_skim"},
+    {label: "Low Fat Milk", value: "milk_lfat"},
+    {label: "Whole Milk", value: "milk_whole"},
     {label: "Fat", value: "fat"},
 
 ]
