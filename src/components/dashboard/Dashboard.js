@@ -123,8 +123,8 @@ class Dashboard extends Component {
       
       let action = diet.goal.action;
       let eat = diet.goal.action == "gain" ? "more" : "less";
-      let current_tdee = diet.current.tdee 
-      let goal_tdee = diet.goal.tdee;
+      let current_tdee = diet.current.tdee.length == 0 ? 0 : diet.current.tdee;
+      let goal_tdee = diet.goal.tdee.length == 0 ? 0 : diet.goal.tdee;
       return (
         <div>
           {timedOut ? 
