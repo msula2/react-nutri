@@ -27,14 +27,19 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>import React, { Component } from 'react';
-import Select from "react-select";
-import { Tooltip } from 'react-tooltip'
 import dayjs, { Dayjs } from 'dayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import MealTable from './MealTable';
-import {columns, food_groups, tracking_options, starches, starch_items} from './calories_data.js';
+import {food_groups, starches, starch_items} from './calories_data.js';
+import { Card, H3, Button, FormGroup, InputGroup, Tooltip, Icon, MenuItem, NumericInput, Popover, ButtonGroup, OverlayToaster, Toast2, Alert} from "@blueprintjs/core";
+import { Select, MultiSelect} from '@blueprintjs/select';
+import { DateInput3} from "@blueprintjs/datetime2";
+import Title from '../title/Title';
+import About from '../about/About';
+import { calories_desc } from '../../descriptions';
+import './Calories.css';
+import BreakdownChart from './BreakdownChart.js';
+import Loader from '../loader/Loader';
+import "./blueprint-datetime.css";
 /**
  * 
  * The Calories component allows the user to track their
@@ -79,28 +84,99 @@ class Calories extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            user: {
+                name: '',
+                id: ''
+            },
+            loggedIn : null,
+            timedOut: null,
+            loading: true,
+            message: '',
+            alert: {
+                isLoading: false,
+                isOpen: true
+            },
             track_method: {label: "Exchange Lists", value: "exchange"},
             meal_name: '',
             datetime: dayjs(),
             food_group: {label: "Starch/Bread", value: "starch"},
             category: {label: "Cereals/Grains/Pasta", value: "cereals_grain_pasta_ss"},
             categories: starches,
+            ingredient: '',
             ingredients_chosen: [],
             ingredients: starch_items.cereals_grain_pasta_ss,
-            data: [
-                // { id: 1, mealName: 'Breakfast', ingredients: ['Eggs', 'Toast', 'Orange Juice'], calories: 350 },
-                // { id: 2, mealName: 'Lunch', ingredients: ['Sandwich', 'Salad', 'Apple'], calories: 450 },
-                // { id: 3, mealName: 'Dinner', ingredients: ['Chicken', 'Rice', 'Broccoli'], calories: 550 }
-            ],
+            serving_unit: '',
+            serving_size: '',
+            grams_breakdown: [],
+            calories_breakdown: {},
+            ToasterSuccess: {
+                show: false,
+                message: ''
+            },
+            ToasterFailed: {
+                show: false,
+                message: ''
+            },
+            userMeals: [],
             dirty: {
                 meal_name: false,
-                ingredients_chosen: false
+                ingredients_chosen: false,
+                datetime: false
             },
             errors: {
                 meal_name: '',
-                ingredients_chosen: ''
+                ingredients_chosen: '',
+                duplicate_entry: '',
+                datetime: ''
             }
+            
         };
+    }
+
+      setUserDetails = (name, id, loggedIn) => {
+        this.setState({ user: { name: name, id: id }, loggedIn: loggedIn, timedOut: false});
+      };
+    
+      clearSession = () => {
+
+        this.setState({ user: { name: '', id: '' }, loggedIn: false, timedOut: true});
+      };
+
+      checkSession = () => {
+        fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/user`, {
+          method: 'get',
+          headers: {'Content-Type': 'application/json'},
+          credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.loggedIn === true){
+            this.setUserDetails(data.user.username, data.user.id, data.loggedIn);
+            fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/user/${data.user.id}/meals/breakdown`, {
+                method: 'get',
+                credentials: 'include'
+              })
+              .then(response => response.json())
+              .then(data => {
+                if (data.result === "success") {
+                  this.setState({ userMeals: data.meals });
+                  this.setState({ loading: false });
+                }
+              })
+              .catch(error => {
+                console.error('Error fetching data:', error);
+                this.setState({ loading: false });
+              });
+          } else if (data.loggedIn === false){
+            this.clearSession();
+          } else {
+            console.log(data.error);
+          }
+        });
+      };
+
+    componentDidMount() { 
+        this.checkSession();
     }
 
     /**
@@ -153,7 +229,15 @@ class Calories extends Component {
      * 
      */
     dateChange = (dateTime) => {
-        this.setState({datetime: dateTime})
+
+        let errors = { ...this.state.errors };
+        let dirty = {...this.state.dirty};
+
+        dirty.datetime = true;
+
+        errors.datetime = dateTime.trim() === '' ? 'Date and time are required.' : '';
+
+        this.setState({datetime: dateTime, errors, dirty})
     }
 
     /**
@@ -172,13 +256,36 @@ class Calories extends Component {
     groupChange = (selectedOption) => {
         let group = selectedOption.value;
 
-        let categories = starches;
+        let categories = [];
+        let category = '';
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/groups/${group}/categories/get`, {
+            method: 'get',
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then (data => {
+            if (data.result == "success"){
+                categories = data.categories;
+                if (categories.length != 0){
+                    category = categories[0];
+                    fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/categories/${category.value}/items/get`, {
+                        method: 'get',
+                        credentials: 'include'
+                    })
+                    .then(response => response.json())
+                    .then (data => {
+                        if (data.result == "success"){
+                            let ingredients = data.items;
+                            this.setState({ food_group: selectedOption, categories: categories, category: category, ingredients: ingredients});
+                        }
+                    })
+                }
 
-        if (group == "starch"){
-            categories = starches
-        }
+            }
+        })
+        
 
-        this.setState({ food_group: selectedOption, categories: categories, category: categories[0]});
+        
     };
 
     /**
@@ -196,39 +303,61 @@ class Calories extends Component {
      */
     categoryChange = (selectedOption) => {
         let category = selectedOption.value;
-        let ingredients = starch_items[category];
 
-        if (category.endsWith("_ss")){
-            ingredients = starch_items[category];
-        }
+        let ingredients = [];
+        
 
-        this.setState({ category: selectedOption, ingredients: ingredients});
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/categories/${category}/items/get`, {
+            method: 'get',
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then (data => {
+            if (data.result == "success"){
+                ingredients = data.items;
+                this.setState({ category: selectedOption, ingredients: ingredients});
+            }
+        })
+
+
+
+        
 
     }
-    
-    /**
-     * Updates the selected ingredient for adding to the meal.
-     *
-     * @summary This method takes an onChange event and updates the selected ingredient for adding to the meal.
-     * 
-     * @instance
-     * @memberOf Calories
-     * @method ingredientsChange
-     *
-     * @param {Object} selectedOption - The selected option representing the ingredient.
-     * @param {string} selectedOption.label - The label of the selected ingredient option.
-     * @param {string} selectedOption.value - The value of the selected ingredient option.
-     */
-    ingredientsChange = (selectedOption) => {
-        let errors = {...this.state.errors}
+
+    ingredientChange = (selectedOption) => {
+        let ingredient = selectedOption.value;
+        let ingredient_info = {};
         
-        errors.ingredients_chosen = selectedOption.length == 0 ? 'Atleast one ingredient needs to be part of meal.' : '';
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/items/${ingredient}/get`, {
+            method: 'get',
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then (data => {
+            if (data.result == "success"){
+                ingredient_info = data.item;
+                let pie_chart = ingredient_info.breakdown.grams;
+                let table_chart = ingredient_info.breakdown.calories;
+                
+                let errors = {...this.state.errors}
+                let ingredients_chosen = this.state.ingredients_chosen;
+        
+                if(ingredients_chosen.find((item) => item.value === ingredient)){
+                    errors.duplicate_entry = 'This food item already exists'
+                }
+                else{
+                    errors.duplicate_entry = ''
+                }
+                this.setState({ ingredient: selectedOption, serving_unit: ingredient_info.serving_unit, grams_breakdown: pie_chart, calories_breakdown: table_chart, errors});
+                
+            }
+        })
 
-        let dirty = {...this.state.dirty};
 
-        dirty.ingredients_chosen = true;
 
-        this.setState({ ingredients_chosen: selectedOption, errors, dirty});
+        
+
     }
 
     /**
@@ -242,42 +371,151 @@ class Calories extends Component {
      * @method addMeal
      */
     addMeal = () => {
-        const { meal_name, track_method, food_group, category, ingredients_chosen, data } = this.state;
-        let newData = [];
+        const {ingredients_chosen, meal_name, datetime, ToasterSuccess, ToasterFailed} = this.state;
+        const { user } = this.state;
 
-        // Initialize calories
-        let calories = 0;
-
-        // Create a new ingredient object
-        let new_meal = {
-            id: data.length + 1,
-            mealName: meal_name,
-            ingredients: [ingredients_chosen.map(item => item.label)],
-            calories: 0,
-            breakdown: [
-                { name: 'Protein', value: 30 },
-                { name: 'Carbohydrates', value: 200 },
-                { name: 'Fat', value: 120 }
-              ]
-        };
-
-
-        // Calculate calories based on the selected food group
-        if (food_group.value === "starch") {
-            new_meal.calories = 80;
-        }
-
-        // Check if the meal already exists in the data
-        let meal_exists = data.filter((item) => item.mealName === meal_name);
-
-        // If meal does not exist, create a new meal with the new ingredient
-        if (meal_exists.length === 0) {
-            newData = [...data, new_meal];
-        }
-
-        // Update the state with the new meal data
-        this.setState({ data: newData });
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/user/${user.id}/meal/add`, {
+            method: 'post',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: meal_name,
+                datetime: datetime,
+                meal_ingredients: ingredients_chosen
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result == "success"){
+                ToasterSuccess.show = true;
+                ToasterSuccess.message = data.message;
+                this.setState({ ToasterSuccess});
+            }
+            else{
+                if(data.loggedIn == null){
+                    ToasterFailed.show = true;
+                    ToasterFailed.message = data.message;
+                    this.setState({ ToasterFailed});
+                }
+                else{
+                    
+                    this.setState({timedOut: true});
+                }
+                
+            }
+        });
+        
     }
+
+    deleteMeal = (mealId) => {
+        const { user } = this.state;
+      
+        fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/user/${user.id}/meal/${mealId}/delete`, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.result === "success") {
+            const { ToasterSuccess } = this.state;
+            ToasterSuccess.show = true;
+            ToasterSuccess.message = data.message;
+            this.setState({ ToasterSuccess });
+          } else {
+            const { ToasterFailed } = this.state;
+            ToasterFailed.show = true;
+            ToasterFailed.message = data.message;
+            this.setState({ ToasterFailed });
+          }
+        })
+        .catch(error => {
+          console.error('Error deleting meal:', error);
+          const { ToasterFailed } = this.state;
+          ToasterFailed.show = true;
+          ToasterFailed.message = 'Error deleting meal';
+          this.setState({ ToasterFailed });
+        });
+      };
+      
+
+    servingChange = (event) => {
+        const size = event;
+        const ingredient = this.state.ingredient;
+        let ingredient_info = {};   
+        if (size != 0){
+            fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/items/${ingredient.value}/get`, {
+            method: 'get',
+            credentials: 'include'
+            })
+            .then(response => response.json())
+            .then (data => {
+                if (data.result == "success"){
+                    ingredient_info = data.item;
+                    let grams_breakdown = ingredient_info.breakdown.grams;
+                    let calories_breakdown = ingredient_info.breakdown.calories;
+                    grams_breakdown = grams_breakdown.map((item) => ({name: item.name, value: item.value * size}));
+                    calories_breakdown = {
+                        carbohydrates: calories_breakdown.carbohydrates * size,
+                        proteins: calories_breakdown.proteins * size,
+                        fats: calories_breakdown.fats * size,
+                        total: calories_breakdown.total * size
+                    };
+
+                    this.setState({ serving_size: size, grams_breakdown, calories_breakdown});
+                    
+                }
+            })
+            
+            
+            
+        }
+        else{
+            this.setState({serving_size: size})
+        }
+        
+    }
+
+    ingredientAdd = () => {
+        const {ingredient, serving_size, ingredients_chosen, food_group} = this.state;
+        let food_item = {
+            label: ingredient.label,
+            value: ingredient.value,
+            serving_size: serving_size,
+            foodgroup: food_group.value
+        }
+        let errors = {...this.state.errors}
+        let dirty = {...this.state.dirty};
+
+        dirty.ingredients_chosen = true;
+
+        if(ingredients_chosen.find((item) => item.label === food_item.label) == undefined){
+            let ingredients_chosen_updated = [...ingredients_chosen];
+            ingredients_chosen_updated.push(food_item);
+            errors.ingredients_chosen = ingredients_chosen_updated.length == 0 ? 'Atleast one ingredient needs to be part of meal.' : '';
+            this.setState({ingredients_chosen: ingredients_chosen_updated, ingredient:'', serving_size: '', errors, dirty});
+        }
+        
+
+        
+    }
+
+    ingredientRemove = (itemToRemove) => {
+        const { ingredients_chosen } = this.state;
+        
+        const newIngredientsChosen = ingredients_chosen.filter(item => item.label !== itemToRemove);
+
+        let errors = {...this.state.errors}
+        let dirty = {...this.state.dirty};
+
+        dirty.ingredients_chosen = true;
+
+        
+        errors.ingredients_chosen = newIngredientsChosen.length == 0 ? 'Atleast one ingredient needs to be part of meal.' : '';
+    
+        this.setState({ ingredients_chosen: newIngredientsChosen, ingredient: '', dirty, errors });
+    };
+
 
 
     addEnabled = () => {
@@ -292,6 +530,35 @@ class Calories extends Component {
             return true;
         }
     }
+
+    renderItem = (item, { handleClick, modifiers }) => {
+        return (
+            &lt;MenuItem
+                key={item.value}
+                text={item.label}
+                onClick={handleClick}
+                active={modifiers.active}
+            />
+        );
+    };
+
+    handleMoveConfirm = () => {
+        let alert = {...this.state.alert};
+        alert.isLoading = true;
+        this.setState({ alert });
+
+        
+        const close = () => {
+            let alert = {
+                isLoading: false,
+                isOpen: false
+            }
+            this.setState({ alert });
+            window.location.replace("/#/login");
+        };
+        setTimeout(close, 2000);
+    };
+
 
     /**
      * Displays the components of the Calories Module
@@ -308,138 +575,348 @@ class Calories extends Component {
 
 
     render() {
-        const {meal_name, datetime, meals, track_method, food_group, category, categories, ingredient, ingredients, data,  errors, add_enabled } = this.state;
+        const {meal_name, meals, food_group, category, categories, ingredient, ingredients, ingredients_chosen,  errors, serving_unit, serving_size, grams_breakdown,calories_breakdown, userMeals, dateTime, ToasterSuccess, ToasterFailed, loading, message, alert, timedOut} = this.state;
+        
+
 
         return (
-            &lt;div className="mt4">
-                &lt;div className="fl w-50">
-                    &lt;div className="detailed-card">
-                        &lt;h1 className="detailed-title">Ingredients&lt;/h1>
-                        &lt;div className="card-fields">
-                            &lt;div className="field-row">
-                                &lt;div className="field-label">
-                                    &lt;label>Meal Name&lt;/label>
-                                &lt;/div>
-                                &lt;div className="field-value">
-                                    &lt;input
-                                        className="field-input"
-                                        type="text"
-                                        value={meal_name}
-                                        onChange={this.nameChange}
-                                    />
-                                    {errors.meal_name &amp;&amp; 
-                                        &lt;div className="err" >
-                                            &lt;a data-tooltip-id="meal_name_err" data-tooltip-content={errors.meal_name}>
-                                                &lt;i className="fa-solid fa-circle-exclamation error-icon">&lt;/i>
-                                            &lt;/a>
-                                            &lt;Tooltip id="meal_name_err" />
-                                        &lt;/div>
-                                    }
-                                    
-                                &lt;/div>
+            &lt;div className='w-100 h-100 d-flex flex-column justify-center items-center'>
+                {timedOut ? 
+                (
+                    &lt;Alert
+                        style={{backgroundColor: "#6eadca", color: "#ffe39f", fontWeight: "bold"}}    
+                        confirmButtonText="Login"
+                        intent={"success"}
+                        isOpen={alert.isOpen}
+                        loading={alert.isLoading}
+                        onConfirm={this.handleMoveConfirm}
+                    >
+                    &lt;p>
+                        Your session has ended, please log back in again
+                    &lt;/p>
+                    &lt;/Alert>
+                )
+                :
+                (
+                &lt;>
+                {loading &amp;&amp; (
+                    &lt;div className="loader-overlay">
+                        &lt;Loader message={message} />
+                    &lt;/div>
+                )}
+                {ToasterSuccess.show &amp;&amp;
+                (&lt;OverlayToaster className="mt5">
+                    &lt;Toast2 
+                    icon="tick-circle" 
+                    intent="success" 
+                    message={ToasterSuccess.message}
+                    isCloseButtonShown={false}
+                    action={{
+                        text: "Refresh",
+                        onClick: () => window.location.reload() 
+                    }}
+                    timeout={0}
+                    
+                    />
+                &lt;/OverlayToaster>
+                )}
+                {ToasterFailed.show &amp;&amp;
+                (&lt;OverlayToaster className="mt5">
+                    &lt;Toast2 
+                    icon="warning-sign" 
+                    intent="danger" 
+                    message={ToasterFailed.message} 
+                    isCloseButtonShown={false}
+                    action={{
+                        text: "Refresh",
+                        onClick: () => window.location.reload() 
+                    }}
+                    timeout={0}
+                    
+                    />
+                &lt;/OverlayToaster>
+                )}
+                 &lt;div className="flex">
+                    &lt;div className="w-60">
+                        &lt;Title text="Calories" color="#FFE39F" />
+                        &lt;About text={calories_desc} className="pb0"/>
+                        &lt;div style={{paddingLeft: "2rem", paddingRight: "2rem", marginLeft: "4rem"}}>
+                            &lt;h2>Instructions &lt;Icon icon="info-sign" className="mb1 ml1"/> &lt;/h2>
+                            &lt;ul className="w-60">
+                            &lt;li>Create a meal by assigning it a name and time&lt;/li>
+                            &lt;li>For each meal you can add the ingredients/food items present in it&lt;/li>
+                            &lt;li>The caloric breakdown for each ingredient can be checked by hovering over the chart icon which is displayed&lt;/li>
+                            &lt;li>Upon clicking add, the meal will be added to the table and will be used to track your caloric intake!&lt;/li>
+                            &lt;/ul>
+                            &lt;h2>Meals Table &lt;Icon icon="panel-table" className="mb1 ml1"/> &lt;/h2>
+                            &lt;div className="pa3 pl0 w-90">
+                                &lt;MealTable data={userMeals} deleteMeal={this.deleteMeal} />
                             &lt;/div>
-                            &lt;div className="field-row">
-                                &lt;div className="field-label">
-                                    &lt;label>Time&lt;/label>
-                                &lt;/div>
-                                &lt;div className="field-value">
-                                &lt;LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    &lt;DateTimePicker
-                                        value={datetime}
-                                        onChange={this.dateChange}
-                                        className="w-80"
-                                    />
-                                &lt;/LocalizationProvider>                             
-                                &lt;/div>
-                            &lt;/div>
-                            &lt;div className="field-row">
-                                &lt;div className="field-label">
-                                    &lt;label>Method of tracking&lt;/label>
-                                &lt;/div>
-                                &lt;div className="field-value">
-                                    &lt;Select
-                                        value={track_method}
-                                        onChange={this.trackChange}
-                                        options={tracking_options}
-                                        className="w-80"
-                                    />
-                                &lt;/div>
-                            &lt;/div>
-                            {this.state.track_method.value == 'exchange' ? 
-                            &lt;div className="w-100">
-                                &lt;div className="field-row">
-                                    &lt;div className="field-label">
-                                        &lt;label>Food Group&lt;/label>
-                                    &lt;/div>
-                                    &lt;div className="field-value">
-                                        &lt;Select
-                                            value={food_group}
-                                            onChange={this.groupChange}
-                                            options={food_groups}
-                                            className="w-80"
-                                        />
-                                    &lt;/div>
-                                &lt;/div>
-                                &lt;div className="field-row">
-                                    &lt;div className="field-label">
-                                        &lt;label>Category&lt;/label>
-                                    &lt;/div>
-                                    &lt;div className="field-value">
-                                        &lt;Select
-                                            value={category}
-                                            onChange={this.categoryChange}
-                                            options={categories}
-                                            className="w-80"
-                                        />
-                                    &lt;/div>
-                                &lt;/div>
-                                &lt;div className="field-row">
-                                    &lt;div className="field-label">
-                                        &lt;label>Ingredients&lt;/label>
-                                    &lt;/div>
-                                    &lt;div className="field-value">
-                                        &lt;Select
-                                            isMulti
-                                            name="ingredients"
-                                            onChange={this.ingredientsChange}
-                                            options={ingredients}
-                                            className="basic-multi-select, w-80"
-                                            classNamePrefix="select"
-                                            
-                                        />
-                                        {errors.ingredients_chosen &amp;&amp; 
-                                            &lt;div className="err" >
-                                                &lt;a data-tooltip-id="ingredients_chosen_err" data-tooltip-content={errors.ingredients_chosen}>
-                                                    &lt;i className="fa-solid fa-circle-exclamation error-icon">&lt;/i>
-                                                &lt;/a>
-                                                &lt;Tooltip id="ingredients_chosen_err" />
+                        &lt;/div>
+                        
+                    &lt;/div>
+                    &lt;div className="w-40 items-center" style={{marginBottom: "auto"}}>
+                        &lt;Card interactive={true} elevation={4} className="card-content w-80 mt5">
+                        &lt;div className="w-100 mt3">
+                                    &lt;H3>Add Meal Information&lt;/H3>
+                                    &lt;div className="pa4 pb0">
+                                        &lt;FormGroup
+                                        label="Meal Name"
+                                        inline={true}
+                                        className="white bp5-text-large"
+                                        >
+                                            &lt;div className="flex items-center">
+                                                &lt;InputGroup 
+                                                    onChange={this.nameChange}
+                                                    placeholder=""
+                                                    intent= {errors.meal_name === '' ? "success": "danger"}
+                                                    large={true}
+                                                    value={meal_name}
+                                                    className="calories"
+                                                    
+                                                    
+                                                />
+                                                {errors.meal_name &amp;&amp; 
+                                                &lt;Tooltip content={errors.meal_name} placement="right" >
+                                                    &lt;i className="fa-solid fa-circle-exclamation error-icon ml3">&lt;/i>
+                                                &lt;/Tooltip>
+                                                
+                                                }
                                             &lt;/div>
+                                        &lt;/FormGroup>
+
+                                        &lt;FormGroup
+                                            label="Time"
+                                            inline={true}
+                                            className="white bp5-text-large"
+                                        >
+                                            &lt;div className="flex items-center">
+                                                &lt;div className="w-100">
+                                                    &lt;DateInput3
+                                                        locale={"en-US"}
+                                                        onChange={this.dateChange}
+                                                        popoverProps={{ placement: "right" }}
+                                                        rightElement={
+                                                            true &amp;&amp; &lt;Icon icon="globe" intent="primary" style={{ padding: "11px 7px" }} />
+                                                        }
+                                                        showTimePickerArrows={true}
+                                                        useAmPm={true}
+                                                        dateFnsFormat={"yyyy-MM-dd HH:mm:ss"}
+                                                        timePickerProps={{ showArrowButtons:true, useAmPm: true}}
+                                                        value={dateTime}
+                                                        className={"bp5-intent-success bp5-large calories"}
+                                                    />
+                                                    
+                                                &lt;/div>
+                                                {errors.datetime &amp;&amp; (
+                                                    &lt;Tooltip content={errors.datetime} placement="right" >
+                                                        &lt;i className="fa-solid fa-circle-exclamation error-icon ml3">&lt;/i>
+                                                    &lt;/Tooltip>
+                                                )}
+                                            &lt;/div>
+                                        &lt;/FormGroup>
+                                        &lt;FormGroup
+                                        label="Food Group"
+                                        inline={true}
+                                        className="white bp5-text-large"
+                                        >
+                                            &lt;div className="flex items-center">
+                                            &lt;Select
+                                                activeItem={food_group}
+                                                onItemSelect={this.groupChange}
+                                                items={food_groups}
+                                                itemRenderer={this.renderItem}
+                                                filterable={false}
+                                                popoverProps={{ minimal: false, placement: "right"}}
+                                                className="w-70"
+                                                
+                                            >
+
+                                                &lt;Button
+                                                    rightIcon={&lt;Icon icon="caret-down" intent="success"/>}
+                                                    text={food_group ? food_group.label : 'Select...'}
+                                                    fill={true}
+                                                    large={true}
+                                                    round={true}
+                                                    className="select-btn flex justify-space"
+
+                                                />
+                                            &lt;/Select>
+                                            &lt;/div>
+                                        &lt;/FormGroup>
+                                        {categories.length != 0 &amp;&amp;
+                                        &lt;FormGroup
+                                        label="Category"
+                                        inline={true}
+                                        className="white bp5-text-large"
+                                        >
+                                            &lt;div className="flex items-center">
+                                            &lt;Select
+                                                activeItem={category}
+                                                onItemSelect={this.categoryChange}
+                                                items={categories}
+                                                itemRenderer={this.renderItem}
+                                                filterable={false}
+                                                popoverProps={{ minimal: false, placement: "right"}}
+                                                className="w-70"
+                                                
+                                            >
+
+                                                &lt;Button
+                                                    rightIcon={&lt;Icon icon="caret-down" intent="success"/>}
+                                                    text={category ? category.label : 'Select...'}
+                                                    fill={true}
+                                                    large={true}
+                                                    round={true}
+                                                    className="select-btn flex justify-space"
+
+                                                />
+                                            &lt;/Select>
+                                            &lt;/div>
+                                        &lt;/FormGroup>
                                         }
+                                        
+                                        &lt;FormGroup
+                                        label="Food Item"
+                                        inline={true}
+                                        className="white bp5-text-large"
+                                        >
+                                            &lt;div className="flex items-center">
+                                            &lt;Select
+                                                activeItem={ingredient}
+                                                onItemSelect={this.ingredientChange}
+                                                items={ingredients}
+                                                itemRenderer={this.renderItem}
+                                                filterable={false}
+                                                popoverProps={{ minimal: false, placement: "right"}}
+                                                className="w-70"
+                                                
+                                            >
+
+                                                &lt;Button
+                                                    rightIcon={&lt;Icon icon="caret-down" intent="success"/>}
+                                                    text={ingredient ? ingredient.label : 'Select...'}
+                                                    fill={true}
+                                                    large={true}
+                                                    round={true}
+                                                    className="select-btn flex justify-space"
+
+                                                />
+                                            &lt;/Select>
+                                            &lt;/div>
+                                        &lt;/FormGroup>
+                                        {ingredient != '' &amp;&amp;
+                                        &lt;React.Fragment>
+                                        &lt;FormGroup
+                                        label="Serving Size"
+                                        inline={true}
+                                        className="white bp5-text-large"
+                                        >
+                                            &lt;div className="flex items-center">
+                                                &lt;div className="w-40">
+                                                    &lt;NumericInput 
+                                                    onValueChange={this.servingChange} 
+                                                    large={true}
+                                                    buttonPosition="none"
+                                                    intent={"success"}
+                                                    disabled={errors.duplicate_entry ? true: false}
+                                                    />
+                                                &lt;/div>
+                                                &lt;div className="w-60">
+                                                    &lt;div className="w-50">
+                                                    &lt;ButtonGroup large={true} className="flex justify-between items-center">
+                                                        &lt;div className="mr3">{serving_unit}&lt;/div>
+                                                        &lt;Popover
+                                                        content={
+                                                            &lt;div>
+                                                                 &lt;div>
+                                                                    &lt;BreakdownChart data_pie={grams_breakdown} data_table={calories_breakdown} serving_size={serving_size} serving_unit={serving_unit} width={300} height={300}/>
+                                                                 &lt;/div>
+                                                                 
+                                                            &lt;/div>
+                                                            
+                                                        }
+                                                        interactionKind="click"
+                                                        onInteraction={state => this.handleInteraction(state)} 
+                                                        placement="right"
+                                                        >
+                                                        &lt;Tooltip content={"Click to see caloric breakdown"} placement="right">&lt;i className="fa-solid fa-chart-pie mr3">&lt;/i>&lt;/Tooltip>
+                                                        &lt;/Popover>
+                                                        {errors.duplicate_entry === '' &amp;&amp; serving_size != 0 &amp;&amp;
+                                                        &lt;Tooltip content={"Click to add to list of food items"} placement="right">&lt;Icon icon="add" onClick={this.ingredientAdd}>&lt;/Icon>&lt;/Tooltip>
+                                                        }
+                                                        {errors.duplicate_entry &amp;&amp;
+                                                        &lt;Tooltip content={errors.duplicate_entry} placement="right" >
+                                                                &lt;i className="fa-solid fa-circle-exclamation error-icon ml3">&lt;/i>
+                                                        &lt;/Tooltip> 
+                                                        }
+                                                        
+                                                    &lt;/ButtonGroup>
+
+                                                    &lt;/div>
+                                                    
+                                                &lt;/div>
+                                                
+                                                
+                                            &lt;/div>
+                                            
+                                        &lt;/FormGroup>
+                                        
+                                        &lt;/React.Fragment>
+                                        
+                                        }
+                                        &lt;FormGroup
+                                            label="Food Items"
+                                            inline={true}
+                                            className="white bp5-text-large"
+                                        >
+                                            &lt;div className="flex items-center">
+                                                &lt;MultiSelect
+                                                    items={ingredients_chosen}
+                                                    itemRenderer={this.renderItem}
+                                                    tagRenderer={item => item.label}
+                                                    placeholder="List of food items"
+                                                    popoverProps={{ minimal: true}}
+                                                    selectedItems={ingredients_chosen}
+                                                    tagInputProps={{
+                                                        onRemove: this.ingredientRemove,
+                                                    }}
+                                                    className="w-70"
+                                                />
+                                                {errors.ingredients_chosen &amp;&amp; 
+                                                &lt;Tooltip content={errors.ingredients_chosen} placement="right" >
+                                                    &lt;i className="fa-solid fa-circle-exclamation error-icon ml3">&lt;/i>
+                                                &lt;/Tooltip>
+                                                
+                                                }
+                                                
+                                            &lt;/div>
+                                        &lt;/FormGroup>
+                                        &lt;div className="flex items-center justify-end mr2">
+                                                
+                                        &lt;Tooltip content="Click to add meal to the table" placement="right">
+                                            &lt;Button className={"submit-btn"} 
+                                            rightIcon="plus" intent="success" 
+                                            text="Add" large={true} 
+                                            disabled={this.addEnabled()}
+                                            onClick={this.addMeal}/>
+                                        &lt;/Tooltip>
+                                            
+                                        &lt;/div>
+                                        
                                     &lt;/div>
                                     
                                 &lt;/div>
-                            &lt;/div>
-                            
-                            :
-                            &lt;div>To do&lt;/div>
-                            }
-                        &lt;/div>
-                        &lt;div className="card-tools">
-                            &lt;button 
-                                className="btn-submit"
-                                disabled={this.addEnabled()}
-                                onClick={this.addMeal}>&lt;i className="fa-solid fa-plus">&lt;/i> Add
-                            &lt;/button>
-                        &lt;/div>
+                        &lt;/Card>
+                        
                     &lt;/div>
-                &lt;/div>
-                &lt;div className="fl w-50">
-                    &lt;div className="detailed-card">
-                        &lt;h1 className="detailed-title">Meal Information&lt;/h1>
-                        &lt;MealTable columns={columns} data={data} />
-                    &lt;/div>
-                &lt;/div>
+                 &lt;/div>
+                &lt;/>
+                )}
+                
             &lt;/div>
+
+            
         );
     }
 }
@@ -455,13 +932,13 @@ export default Calories;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Calories.html">Calories</a></li><li><a href="Login.html">Login</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Calories.html">Calories</a></li><li><a href="Dashboard.html">Dashboard</a></li><li><a href="Login.html">Login</a></li><li><a href="Register.html">Register</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Mon Mar 25 2024 19:32:52 GMT+0500 (Pakistan Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Fri May 03 2024 22:46:59 GMT+0500 (Pakistan Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
