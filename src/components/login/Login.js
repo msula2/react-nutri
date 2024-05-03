@@ -10,24 +10,34 @@ import vegetables_pic from "../../assets/imgs/home-vegetables.jpg"
 import oil_pic from "../../assets/imgs/home-oil.jpg"
 import { AnchorButton, Button, FormGroup, InputGroup, Tooltip, Icon} from "@blueprintjs/core";
 import Loader from '../loader/Loader';
-/**
- * @typedef {Object} Props
- * @property {Function} setUser Function to set user data
- */
 
 /**
- * Component for user login.
- * @param {Props} props - The props passed to the component.
- * @example
- * <Login setUser={setUserFunction} />
- * // Renders a login form allowing the user to log in.
+ * 
+ * The Login component displays the username and password requried to login 
+ * 
+ * @property {string} username - The username input value.
+ * @property {string} password - The password input value.
+ * @property {boolean} loggedIn - Flag indicating whether the user is logged in.
+ * @property {boolean} showPassword - Flag indicating whether the password is visible.
+ * @property {Object} dirty - Flags indicating whether the username and password inputs have been modified.
+ * @property {boolean} dirty.username - Flag indicating whether the username input has been modified.
+ * @property {boolean} dirty.password - Flag indicating whether the password input has been modified.
+ * @property {Object} errors - Error messages for username, password, and login.
+ * @property {string} errors.username - Error message for the username input.
+ * @property {string} errors.password - Error message for the password input.
+ * @property {string} errors.login - Error message for the login process.
+ * @property {boolean} loading - Flag indicating whether the component is in a loading state.
+ * @property {string} message - General message related to the component.
+ *
+ * 
+ * @author Hamdan Sulaiman
+ *
+ * @example 
+ * <Login />
+ *
  */
 class Login extends Component{
 
-     /**
-     * Constructor for the Login component.
-     * @param {object} props - The props passed to the component.
-     */
     constructor(props){
         super(props);
         this.state = {
@@ -49,6 +59,16 @@ class Login extends Component{
         }
     }
 
+
+     /**
+     * On mounting the componenet, it sets the loading flag to false after 3s
+     * @summary This method controls the loading screen
+     * 
+     * @instance
+     * @memberOf Login
+     * @method componentDidMount
+     */
+
     componentDidMount() {
         setTimeout(() => {
           this.setState({ loading: false });
@@ -60,7 +80,13 @@ class Login extends Component{
 
      /**
      * Handles username change.
+     * 
+     * @instance
+     * @memberOf Login
+     * @method changeUsername
+     * 
      * @param {object} event - The event object.
+     * 
      */
     changeUsername = (event) =>{
         const { value } = event.target;
@@ -83,7 +109,13 @@ class Login extends Component{
     
     /**
      * Handles password change.
+     * 
+     * @instance
+     * @memberOf Login
+     * @method changePassword
+     * 
      * @param {object} event - The event object.
+     * 
      */
     changePassword = (event) =>{
         const { value } = event.target;
@@ -99,75 +131,100 @@ class Login extends Component{
     }
 
     /**
-     * Logs in the user.
+     * Logs the user into the application. On success sets the loggedIn flag to true.
+     * 
+     * @instance
+     * @memberOf Login
+     * @method loginUser
+     * 
+     * 
      */
-        loginUser = () => {
-            
-            let errors = {...this.state.errors};
-            let dirty = {...this.state.dirty};
-            let username = this.state.username;
-            let password = this.state.password
 
-            this.setState({ loading: true });
-
-            setTimeout(() => {
-            this.setState({ loading: false });
-            }, 3000);
-
-
-            fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/login`, {
-                method: 'post',
-                headers: {'Content-Type': 'application/json'},
-                credentials: 'include',
-                body: JSON.stringify({
-                    username: username,
-                    password: password
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.result == "success"){
-                    this.props.setUserDetails(data.user.username, data.user.id);
-                    setTimeout(() => {
-                        this.setState({loggedIn: true});
-                      }, 3000);
-                    
-                }
-                else{
-                    dirty.password = false;
-                    dirty.username = false;
-                    errors.login = data.error;
-
-                    this.setState({ username: '', password: '', errors, dirty });
-
-                }
-            })
-
-
-        }
-
-        loginEnabled = () => {
-            let errors = {...this.state.errors};
-            let dirty = {...this.state.dirty};
-            let { login, ...otherErrors } = errors;
-
-            let error_msgs = Object.values(otherErrors).filter(item => item !== '');
-            let all_dirty = Object.values(dirty).every(item => item === true);
-
-            if (all_dirty && error_msgs.length == 0){
-                return false;
-            }
-            else{
-                return true;
-            }
-        }
-
+    loginUser = () => {
     
+    let errors = {...this.state.errors};
+    let dirty = {...this.state.dirty};
+    let username = this.state.username;
+    let password = this.state.password
+
+    this.setState({ loading: true });
+
+    setTimeout(() => {
+    this.setState({ loading: false });
+    }, 3000);
+
+
+    fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/login`, {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        credentials: 'include',
+        body: JSON.stringify({
+            username: username,
+            password: password
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.result == "success"){
+            this.props.setUserDetails(data.user.username, data.user.id);
+            setTimeout(() => {
+                this.setState({loggedIn: true});
+                }, 3000);
+            
+        }
+        else{
+            dirty.password = false;
+            dirty.username = false;
+            errors.login = data.error;
+
+            this.setState({ username: '', password: '', errors, dirty });
+
+        }
+    })
+
+
+    }
 
     /**
-     * Renders the Login component.
-     * @returns {JSX.Element} JSX for the Login component.
+     * Check if all the fields are valid, if so enables the login button
+     * 
+     * @instance
+     * @memberOf Login
+     * @method loginEnabled
+     * 
+     * 
      */
+
+
+    loginEnabled = () => {
+        let errors = {...this.state.errors};
+        let dirty = {...this.state.dirty};
+        let { login, ...otherErrors } = errors;
+
+        let error_msgs = Object.values(otherErrors).filter(item => item !== '');
+        let all_dirty = Object.values(dirty).every(item => item === true);
+
+        if (all_dirty && error_msgs.length == 0){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+
+    /**
+     * Displays the components of the Login Module
+     *
+     * @summary This method renders the components of the Login Module.
+     * 
+     * @instance
+     * @memberOf Login
+     * @method render
+     * 
+     * @returns {JSX.Element} The JSX elements representing the rendered components.
+     * 
+     */
+
     
     render(){
 
