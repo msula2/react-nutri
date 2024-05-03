@@ -258,6 +258,6 @@ li:not(.bp5-popover-content li, .p-datatable-tbody li){
   background: #a6d940;
 }
 
-h1, h2{
+h1, h2, h3{
   color: #ffe39f !important;
 }

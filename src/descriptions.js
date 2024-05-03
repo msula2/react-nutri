@@ -109,3 +109,5 @@ export const recipes_desc = `Our recipes aren't just about taste; they're also p
 export const calories_desc = `Welcome to the Calories Module! Here, we use the exchange list method to calculate calorie intake, aiming to help you manage your consumption effectively for your health and wellness goals.
                              This method simplifies calorie counting by grouping foods based on their macronutrient content. Each group is assigned a set number of exchanges, representing portion sizes with similar calorie and nutrient content.
 `
+export const diet_desc = `Tell us more about yourself ! Using the information provided by you, a diet plan will be created, tailored specifically to your needs. To determine your total daily energy expenditure (TDEE) a formula proposed by Harris-Benedict will be used.
+                          The formula uses your age, weight, gender, weight and activity levels. To loose weight you must keep your calories below your TDEE and to gain weight you must keep your calories above TDEE.`

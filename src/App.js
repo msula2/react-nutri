@@ -16,6 +16,7 @@ import Docs from './components/docs/Docs';
 import Calories from './components/calories/Calories';
 import Recipes from './components/recipes/Recipes';
 import HealthTips from './components/healthtips/HealthTips';
+import Diet from './components/diet/Diet';
 
 class App extends Component {
   constructor(){
@@ -93,11 +94,12 @@ class App extends Component {
     const {active} = this.state
     return (
       <HashRouter>
-        {(pathname.length != 0 && !pathname.includes("login") && !pathname.includes("register") && !pathname.includes("docs")) && 
+        {(pathname.length != 0 && !pathname.includes("login") && !pathname.includes("register") && !pathname.includes("docs") && !pathname.includes("diet")) && 
           <Navigation active={active}/>
         }
         <Routes>
             <Route path="/" element={<Login setUserDetails={this.setUserDetails}/>} />
+            <Route path="/diet" element={<Diet/>}/>
             <Route path="/login" element={<Login setUserDetails={this.setUserDetails}/>} />
             <Route path="/register" element={<Register setUserDetails={this.setUserDetails} />} />
             <Route path="/docs" element={<Docs />} />

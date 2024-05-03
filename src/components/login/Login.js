@@ -190,7 +190,11 @@ class Login extends Component{
 
         return(
             <div>
-                {loading && <Loader message={message}/>}
+                {loading && (
+                <div className="loader-overlay">
+                    <Loader message={message} />
+                </div>
+                )}
                 <div className="vw-100 vh-100 flex stack-on-small" style={{display: loading? 'none': 'flex'}}>
                     <div className="w-100-ns w-100-m w-60-l flex items-center justify-center">
                         <div className="flex items-center justify-center h-50 w-100-ns w-100-m w-100-l">

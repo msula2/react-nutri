@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { AnchorButton, Button, FormGroup, InputGroup, Tooltip, Icon } from "@blueprintjs/core";
+import { Button, FormGroup, InputGroup, Tooltip, Toast2, OverlayToaster} from "@blueprintjs/core";
 import sandwich_pic from "../../assets/imgs/register-sandwich.jpg"
 import salad_pic from "../../assets/imgs/register-salad.jpg"
 import steak_pic from "../../assets/imgs/register-steak.jpg"
@@ -25,20 +25,25 @@ class Register extends Component {
     this.state = {
       username: '',
       password: '',
-      email: '',
       confirmPassword: '',
       showPassword: false,
+      ToasterSuccess: {
+        show: false,
+        message: ''
+      },
+      ToasterFailed: {
+          show: false,
+          message: ''
+      },
       errors: {
         username: '',
         password: '',
-        email: '',
         confirmPassword: '',
         register: '',
       },
       dirty: {
         username: false,
         password: false,
-        email: false,
         confirmPassword: false,
       },
       loading: true,
@@ -71,23 +76,6 @@ class Register extends Component {
     this.setState({ username: value, errors, dirty });
   };
 
-  changeEmail = (event) => { 
-    const { value } = event.target;
-    let errors = { ...this.state.errors };
-    let dirty = { ...this.state.dirty };
-
-    let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    dirty.email = true;
-
-    if (emailRegex.test(value)) {
-      errors.email = '';
-    } else {
-      errors.email = 'Invalid email format';
-    }
-
-    this.setState({ email: value, errors, dirty });
-  };
-
 
   changePassword = (event) => {
     const { value } = event.target;
@@ -117,21 +105,13 @@ class Register extends Component {
     let errors = { ...this.state.errors };
     let dirty = { ...this.state.dirty };
 
-    const { username, password, email } = this.state;
+    const { username, password} = this.state;
 
-    this.setState({ loading: true });
-
-    setTimeout(() => {
-      this.setState({ loading: false });
-    }, 3000);
-
-
-    fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}register`, {
+    fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/register`, {
             method: 'post',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 username: username,
-                email: email,
                 password: password
             })
         })
@@ -140,12 +120,19 @@ class Register extends Component {
             if (data.error) {
               dirty.password = false;
               dirty.username = false;
-              errors.register = data.error;
+              const { ToasterFailed } = this.state;
+              ToasterFailed.show = true;
+              ToasterFailed.message = data.error;
+              this.setState({ ToasterFailed });
 
-              this.setState({ username: '', password: '', email: '', errors, dirty });
+              this.setState({ username: '', password: '', errors, dirty });
             } else {
+              const { ToasterSuccess } = this.state;
+              ToasterSuccess.show = true;
+              ToasterSuccess.message = data.message;
+              this.setState({ ToasterSuccess });
               setTimeout(() => {
-                window.location.replace("/#/login");
+                window.location.replace(`/#/diet?id=${data.id}`);
               }, 3000);
               
             }
@@ -153,8 +140,12 @@ class Register extends Component {
         })
         .catch(error => {
             console.error("Error occurred during registration:", error);
-            errors.register = "An error occurred while registering. Please try again later.";
-            this.setState({ username: '', password: '', email: '', errors, dirty });
+            const { ToasterFailed } = this.state;
+            ToasterFailed.show = true;
+            ToasterFailed.message = "An error occurred while registering. Please try again later.";
+            this.setState({ ToasterFailed });
+            
+            this.setState({ username: '', password: '', errors, dirty });
         });
     this.setState({ username: '', password: '', confirmPassword: '', errors, dirty });
   };
@@ -175,7 +166,7 @@ class Register extends Component {
   };
 
   render() {
-    const { username, password, email, confirmPassword, showPassword, loading, message, errors } = this.state;
+    const { username, password, confirmPassword, showPassword, loading, message, ToasterSuccess, ToasterFailed, errors } = this.state;
   
     const lockButton = (
         <Tooltip content={`${showPassword ? "Hide" : "Show"} Password`} disabled={false}>
@@ -190,6 +181,34 @@ class Register extends Component {
     return (
       <div> 
           {loading && <Loader message={message}/>}
+          {ToasterSuccess.show &&
+          (<OverlayToaster className="mt5">
+              <Toast2 
+              icon="tick-circle" 
+              intent="success" 
+              message={ToasterSuccess.message}
+              isCloseButtonShown={false}
+              timeout={2000}
+              
+              />
+          </OverlayToaster>
+          )}
+          {ToasterFailed.show &&
+          (<OverlayToaster className="mt5">
+              <Toast2 
+              icon="warning-sign" 
+              intent="danger" 
+              message={ToasterFailed.message} 
+              isCloseButtonShown={false}
+              action={{
+                  text: "Refresh",
+                  onClick: () => window.location.reload() 
+              }}
+              timeout={0}
+              
+              />
+          </OverlayToaster>
+          )}
           <div className="vw-100 vh-100 flex justify-center items-center stack-on-small" style={{display: loading? 'none': 'flex'}}>
           <div className='w-30-l flex flex-column justify-between items-end'>
               <div className="w-50 mr6">
@@ -227,23 +246,6 @@ class Register extends Component {
                 )}
               </div>
             </FormGroup>
-            <FormGroup label="Email" style={{ color: '#FFE39F' }} className="b f4 lh-copy w-100-ns w-100-m w-100-l">
-                <div className="flex items-center">
-                  <InputGroup
-                    onChange={this.changeEmail}
-                    placeholder=""
-                    intent={errors.email === '' ? 'success' : 'danger'}
-                    large={true}
-                    className="w-80"
-                    value={email}
-                  />
-                  {errors.email && (
-                    <Tooltip content={errors.email} placement="right" isOpen={true}>
-                      <i className="fa-solid fa-circle-exclamation error-icon ml3"></i>
-                    </Tooltip>
-                  )}
-                </div>
-              </FormGroup>
             <FormGroup label="Password" style={{ color: '#FFE39F' }} className="b f4 lh-copy w-100-ns w-100-m w-100-l">
               <div className="flex items-center">
                 <InputGroup

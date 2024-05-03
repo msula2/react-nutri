@@ -240,8 +240,19 @@ class Calories extends Component {
                 categories = data.categories;
                 if (categories.length != 0){
                     category = categories[0];
+                    fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/calories/categories/${category.value}/items/get`, {
+                        method: 'get',
+                        credentials: 'include'
+                    })
+                    .then(response => response.json())
+                    .then (data => {
+                        if (data.result == "success"){
+                            let ingredients = data.items;
+                            this.setState({ food_group: selectedOption, categories: categories, category: category, ingredients: ingredients});
+                        }
+                    })
                 }
-                this.setState({ food_group: selectedOption, categories: categories, category: category});
+
             }
         })
         
@@ -264,6 +275,7 @@ class Calories extends Component {
      */
     categoryChange = (selectedOption) => {
         let category = selectedOption.value;
+
         let ingredients = [];
         
 
@@ -540,7 +552,7 @@ class Calories extends Component {
 
 
         return (
-            <div className='w-100 d-flex flex-column justify-center items-center'>
+            <div className='w-100 h-100 d-flex flex-column justify-center items-center'>
                 {timedOut ? 
                 (
                     <Alert
@@ -559,7 +571,11 @@ class Calories extends Component {
                 :
                 (
                 <>
-                {loading && <Loader message={message}/>}
+                {loading && (
+                    <div className="loader-overlay">
+                        <Loader message={message} />
+                    </div>
+                )}
                 {ToasterSuccess.show &&
                 (<OverlayToaster className="mt5">
                     <Toast2 

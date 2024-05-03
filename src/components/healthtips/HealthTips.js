@@ -101,7 +101,11 @@ class HealthTips extends Component {
       :
       (
       <>
-      {loading && <Loader message={message}/>}
+      {loading && (
+          <div className="loader-overlay">
+              <Loader message={message} />
+          </div>
+      )}
       <div className='vw-100 d-flex flex-column justify-center items-center' style={{display: loading? 'none' : ''}}>
           <Title text="Daily Health Tips" color="#FFE39F" />
           <About text={healthtips_desc}/>

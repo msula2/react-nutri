@@ -332,7 +332,7 @@ class Recipes extends Component{
     render(){
         const {recipe_data, recipe_title, isSearchOpen, isSearchDeleteOpen, recipes, timedOut, ToasterSuccess, ToasterFailed,loading, drawerTitle, isDrawerOpen, message, alert,alert_delete, showUi, errors } = this.state;
         return (
-            <div className='vw-100 vh-100 d-flex flex-column justify-center items-center'>
+            <div className='vh-100 d-flex flex-column justify-center items-center'>
                 {timedOut ? 
                 (
                     <Alert
@@ -351,7 +351,11 @@ class Recipes extends Component{
                 :
                 (
                 <>
-                {loading && <Loader message={message}/>}
+               {loading && (
+                    <div className="loader-overlay">
+                        <Loader message={message} />
+                    </div>
+                )}
                 {ToasterSuccess.show &&
                 (<OverlayToaster className="mt5">
                     <Toast2 
