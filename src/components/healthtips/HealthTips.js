@@ -7,6 +7,34 @@ import { healthtips_desc } from '../../descriptions';
 import { Alert} from "@blueprintjs/core";
 import './HealthTips.css';
 
+/**
+ * 
+ * The HealthTips component informs the user about the different tips useful for leading
+ * a healthy lifestyle, the tips include dietry, excercise, seasonal etc
+ * 
+ * 
+  * The state of the Dashboard component.
+  * @type {Object}
+  * @property {Object} user - Represents the user logged into the session.
+  * @property {string} user.name - The name of the user.
+  * @property {string} user.id - The ID of the user.
+  * @property {boolean} loggedIn - Represents whether the user is logged in or not.
+  * @property {boolean} timedOut - Represents if the user's session is valid or not.
+  * @property {boolean} loading - Flag used to trigger the loading screen.
+  * @property {string} message - Message to be displayed.
+  * @property {Object} alert - Represents an alert.
+  * @property {boolean} alert.isLoading - Flag to indicate if the alert is in loading state.
+  * @property {boolean} alert.isOpen - Flag to indicate if the alert is open.
+  *
+ * 
+ * @author Ren Yi
+ *
+ * @example 
+ * <HealthTips />
+ * 
+ * 
+ */
+
 class HealthTips extends Component {
   
   constructor(props){
@@ -27,14 +55,45 @@ class HealthTips extends Component {
     }
   }
 
+  /**
+     * Updates the session details and whether they are logged in or not
+     * 
+     * @summary This method uses setState to set the user' data
+     * 
+     *
+     * @param {Object} name - Name of the user
+     * @param {string} id - Id of the user
+     * @param {boolean} loggedIn - Wehther the user is logged in or not
+  */
+
   setUserDetails = (name, id, loggedIn) => {
   this.setState({ user: { name: name, id: id }, loggedIn: loggedIn, timedOut: false});
   };
+
+  /**
+     * Clears the session details and logs them out
+     * 
+     * @summary This method uses setState to remove the user's data
+     * 
+     *
+  */
 
   clearSession = () => {
 
   this.setState({ user: { name: '', id: '' }, loggedIn: false, timedOut: true});
   };
+
+
+    /**
+     * Check's wehther the user is part of the session or not if the user is logged in, the user's details are set, if not the user's details are cleared
+     * 
+     * @summary This method check's if the user is in session
+     * 
+     * @instance
+     * @memberOf HealthTips
+     * @method checkSession
+     * 
+     */
 
   checkSession = () => {
   fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/user`, {
@@ -54,6 +113,16 @@ class HealthTips extends Component {
   });
   };
 
+
+    /**
+   * On mounting the componenet, it sets the loading flag to false after 3s
+   * @summary This method controls the loading screen
+   * 
+   * @instance
+   * @memberOf HealthTips
+   * @method componentDidMount
+   */
+
   componentDidMount() {
       setTimeout(() => {
           this.setState({ loading: false });
@@ -61,6 +130,17 @@ class HealthTips extends Component {
       this.checkSession();
       
   }
+
+  /**
+     * Used to close the alert that is disaplyed either of succes or failure
+     * 
+     * @instance
+     * @memberOf Diet
+     * @method handleMoveConfirm
+     * 
+     * @summary This method controls the alert
+     * 
+     */
 
   handleMoveConfirm = () => {
       let alert = {...this.state.alert};
@@ -79,6 +159,19 @@ class HealthTips extends Component {
       setTimeout(close, 2000);
   };
 
+
+    /**
+   * Displays the components of the HealthTips Module
+   *
+   * @summary This method renders the components of the Dashboard Module.
+   * 
+   * @instance
+   * @memberOf Dashboard
+   * @method render
+   * 
+   * @returns {JSX.Element} The JSX elements representing the rendered components.
+   * 
+   */
   render() {
     const {loading, message, timedOut, alert} = this.state;
     return (
