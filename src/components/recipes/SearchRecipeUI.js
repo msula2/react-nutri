@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { H5, Popover, Tooltip, Icon } from '@blueprintjs/core';
-import BreakdownChart from '../calories/BreakdownChart'; // Import your BreakdownChart component
+import BreakdownChart from '../calories/BreakdownChart'; 
+
+/**
+ * Represents a component for displaying recipe ingredients with caloric breakdown.
+ * @component
+ * @param {Object} props - The props object.
+ * @param {string} props.recipeId - The ID of the recipe.
+ * @returns {JSX.Element} A React component displaying the ingredients with caloric breakdown.'
+ * 
+ * 
+ * @author Hamdan Sulaiman
+ *
+ * @example 
+ * <SearchRecipe(id)/>
+ */
 
 const SearchRecipeUI = ({ recipeId }) => {
     const [ingredientsUI, setIngredientsUI] = useState(null);

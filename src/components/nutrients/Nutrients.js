@@ -10,6 +10,30 @@ import { Alert} from "@blueprintjs/core";
 
 import "./Nutrients.css";
 
+/**
+ * 
+ * The Nutrients component disaplys the different nutrients as cards which can be clicked upon to 
+ * learn more.
+ * 
+ * @property {Object} state - The state of the component
+ * @property {Object} state.user - Represents the user logged into the session
+ * @property {Object} state.loggedIn - Represents whether the user is logged in or not, this is used to alert the user if their session ends
+ * @property {Object} state.timedOut- Represents if the user's session is valid or not
+ * @property {Object} state.loading - Flag used to trigger the loading screen
+ * @property {Object} state.alert - Flag used to trigger the alerts
+ * 
+ * 
+ * @author David Wacaser
+ * @author Yi Ren
+ * @author Hamdan Sulaiman
+ * 
+ * 
+ *
+ * @example 
+ * <Nutrients />
+ *
+ */
+
 class Nutrients extends Component {
 
     constructor(props){

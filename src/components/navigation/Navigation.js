@@ -3,6 +3,21 @@ import { Link } from 'react-router-dom';
 import { Navbar, Button, Alignment, Icon, Alert } from "@blueprintjs/core";
 import './Navigation.css';
 
+/**
+ * 
+ * The Navigation component is the top most navbar that allows the user to navigate to 
+ * different parts of the website
+ * 
+ * 
+ * 
+ * 
+ * @author Hamdan Sulaiman
+ *
+ * @example 
+ * <Navigation />
+ *
+ */
+
 class Navigation extends Component {
     constructor(props){
         super(props);

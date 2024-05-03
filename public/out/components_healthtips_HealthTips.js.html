@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/healthtips/HealthTips.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/healthtips/HealthTips.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { Component } from 'react';
+import { Icon, Divider, NonIdealState } from "@blueprintjs/core";
+import Title from '../title/Title';
+import About from '../about/About';
+import Loader from '../loader/Loader';
+import { healthtips_desc } from '../../descriptions';
+import { Alert} from "@blueprintjs/core";
+import './HealthTips.css';
+
+/**
+ * 
+ * The HealthTips component informs the user about the different tips useful for leading
+ * a healthy lifestyle, the tips include dietry, excercise, seasonal etc
+ * 
+ * 
+  * The state of the Dashboard component.
+  * @type {Object}
+  * @property {Object} user - Represents the user logged into the session.
+  * @property {string} user.name - The name of the user.
+  * @property {string} user.id - The ID of the user.
+  * @property {boolean} loggedIn - Represents whether the user is logged in or not.
+  * @property {boolean} timedOut - Represents if the user's session is valid or not.
+  * @property {boolean} loading - Flag used to trigger the loading screen.
+  * @property {string} message - Message to be displayed.
+  * @property {Object} alert - Represents an alert.
+  * @property {boolean} alert.isLoading - Flag to indicate if the alert is in loading state.
+  * @property {boolean} alert.isOpen - Flag to indicate if the alert is open.
+  *
+ * 
+ * @author Ren Yi
+ *
+ * @example 
+ * &lt;HealthTips />
+ * 
+ * 
+ */
+
+class HealthTips extends Component {
+  
+  constructor(props){
+    super(props);
+    this.state = {
+        user: {
+            name: '',
+            id: ''
+        },
+        loggedIn : null,
+        timedOut: null,
+        loading: true,
+        message: '',
+        alert: {
+            isLoading: false,
+            isOpen: true
+        },
+    }
+  }
+
+  /**
+     * Updates the session details and whether they are logged in or not
+     * 
+     * @summary This method uses setState to set the user' data
+     * 
+     *
+     * @param {Object} name - Name of the user
+     * @param {string} id - Id of the user
+     * @param {boolean} loggedIn - Wehther the user is logged in or not
+  */
+
+  setUserDetails = (name, id, loggedIn) => {
+  this.setState({ user: { name: name, id: id }, loggedIn: loggedIn, timedOut: false});
+  };
+
+  /**
+     * Clears the session details and logs them out
+     * 
+     * @summary This method uses setState to remove the user's data
+     * 
+     *
+  */
+
+  clearSession = () => {
+
+  this.setState({ user: { name: '', id: '' }, loggedIn: false, timedOut: true});
+  };
+
+
+    /**
+     * Check's wehther the user is part of the session or not if the user is logged in, the user's details are set, if not the user's details are cleared
+     * 
+     * @summary This method check's if the user is in session
+     * 
+     * @instance
+     * @memberOf HealthTips
+     * @method checkSession
+     * 
+     */
+
+  checkSession = () => {
+  fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/user`, {
+      method: 'get',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'include'
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (data.loggedIn === true){
+      this.setUserDetails(data.user.username, data.user.id, data.loggedIn);
+      } else if (data.loggedIn === false){
+      this.clearSession();
+      } else {
+      console.log(data.error);
+      }
+  });
+  };
+
+
+    /**
+   * On mounting the componenet, it sets the loading flag to false after 3s
+   * @summary This method controls the loading screen
+   * 
+   * @instance
+   * @memberOf HealthTips
+   * @method componentDidMount
+   */
+
+  componentDidMount() {
+      setTimeout(() => {
+          this.setState({ loading: false });
+      }, 3000);
+      this.checkSession();
+      
+  }
+
+  /**
+     * Used to close the alert that is disaplyed either of succes or failure
+     * 
+     * @instance
+     * @memberOf Diet
+     * @method handleMoveConfirm
+     * 
+     * @summary This method controls the alert
+     * 
+     */
+
+  handleMoveConfirm = () => {
+      let alert = {...this.state.alert};
+      alert.isLoading = true;
+      this.setState({ alert });
+
+      
+      const close = () => {
+          let alert = {
+              isLoading: false,
+              isOpen: false
+          }
+          this.setState({ alert });
+          window.location.replace("/#/login");
+      };
+      setTimeout(close, 2000);
+  };
+
+
+    /**
+   * Displays the components of the HealthTips Module
+   *
+   * @summary This method renders the components of the Dashboard Module.
+   * 
+   * @instance
+   * @memberOf Dashboard
+   * @method render
+   * 
+   * @returns {JSX.Element} The JSX elements representing the rendered components.
+   * 
+   */
+  render() {
+    const {loading, message, timedOut, alert} = this.state;
+    return (
+      &lt;div>
+      {timedOut ? 
+      (
+          &lt;Alert
+              style={{backgroundColor: "#6eadca", color: "#ffe39f", fontWeight: "bold"}}    
+              confirmButtonText="Login"
+              intent={"success"}
+              isOpen={alert.isOpen}
+              loading={alert.isLoading}
+              onConfirm={this.handleMoveConfirm}
+          >
+          &lt;p>
+              Your session has ended, please log back in again
+          &lt;/p>
+          &lt;/Alert>
+      )
+      :
+      (
+      &lt;>
+      {loading &amp;&amp; (
+          &lt;div className="loader-overlay">
+              &lt;Loader message={message} />
+          &lt;/div>
+      )}
+      &lt;div className='vw-100 d-flex flex-column justify-center items-center' style={{display: loading? 'none' : ''}}>
+          &lt;Title text="Daily Health Tips" color="#FFE39F" />
+          &lt;About text={healthtips_desc}/>
+          &lt;div className="health-tips-container vw-100">
+            &lt;div className="flex items-center"> 
+              &lt;section className="tips-section w-60">
+                &lt;h2>Diet Advice &lt;Icon icon="lightbulb" className="yellow mb1 ml1"/> &lt;/h2>
+                &lt;ul>
+                    &lt;li>Control total energy to maintain ideal weight. Gradually reduce weight if over the normal standard. Combine individual height, weight, and physical activity to determine the appropriate diet quantity. People over 40 should especially prevent becoming overweight. The simple calculation for normal weight is: BMI = kg (weight) / m² (height squared), with 19~24 being the normal range, over 25 overweight, and over 28 obese.&lt;/li>
+                    &lt;li>Eat an appropriate amount of staple food: 5~8 taels daily, mainly rice and flour, with 1/3 of daily staple food being coarse grains.&lt;/li>
+                    &lt;li>Eat plenty of vegetables: about 1 jin daily, focus on choosing dark green and red vegetables; 1~2 medium-sized fruits daily, cannot replace fruits with processed juice drinks.&lt;/li>
+                    &lt;li>Eat meat in moderation: 1~2 taels of fish and shrimp per day, 1 to 1.5 taels of lean pork (or beef, lamb), chicken and duck meat can replace pork after removing the skin. 1 boiled egg white. No more than 3 egg yolks per week.&lt;/li>
+                    &lt;li>Half a jin of low-fat milk and half a tael of soybeans (or about 1 tael of dried tofu, 2~3 taels of tofu) daily.&lt;/li>
+                    &lt;li>Eat light and less salt: Besides the quantity of fat, the type of fat is more important. Choose vegetable oils rich in unsaturated fatty acids for cooking, such as soybean oil, rapeseed oil, blended oil, tea oil, olive oil, etc., about 20 grams, approximately 2 tablespoons. Less than 6 grams of salt per day, do not consume additional salty foods like pickles, soy sauce, fermented tofu, sesame paste, etc.&lt;/li>
+                    &lt;li>Food to avoid or eat less: Animal fats such as lard, butter, chicken fat, cream, etc.; animal offal like brain, liver, kidneys, etc.; foods rich in cholesterol like fatty meat, fish roe, egg yolks, preserved eggs; cream cakes, desserts, sweet drinks; spicy and stimulating seasonings; strong alcohol; strong coffee, tea, and meat broth.&lt;/li>
+                    &lt;li>Meal arrangements should be small and frequent, avoid overeating, and dinner should avoid intake of too greasy and indigestible food. Advocating walking for 30~60 minutes after dining for half an hour.&lt;/li>
+                &lt;/ul>
+                
+              &lt;/section>
+              &lt;div className="w-40">
+              &lt;div style={{ margin: "0 auto", width: "500px" }}>
+                &lt;iframe
+                  width="500"
+                  height="300"
+                  className="br3"
+                  src="https://www.youtube.com/embed/Q4yUlJV31Rk?si=0j30H9ylZDonNYCI"
+                  title="YouTube video player"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen
+                >&lt;/iframe>
+              &lt;/div>
+            &lt;/div>
+
+            &lt;/div>
+            
+
+            &lt;Divider/>
+            &lt;div className="flex items-center">
+              &lt;section className="tips-section w-60">
+                &lt;h2>Exercise &amp; Fitness &lt;Icon icon="heart" className="red mb1 ml1"/> &lt;/h2>
+                &lt;p>Regular exercise has numerous benefits for the body and mind, including:&lt;/p>
+                &lt;ul>
+                  &lt;li>&lt;strong>Improving the Cardiovascular System:&lt;/strong> Effective heart contractions and smooth blood circulation can promote the blood supply to the coronary arteries. Consistent exercise can lower heart rate, including the resting heart rate, and improve the elasticity of blood vessels, helping to reduce blood pressure.&lt;/li>
+                  &lt;li>&lt;strong>Strengthening the Musculoskeletal System:&lt;/strong> Increases in bone and muscle mass, as well as enhancements in muscle strength and flexibility, can prevent osteoporosis and sarcopenia, providing general support for the spine and muscles. Active movement also helps prevent falls and fractures in old age.&lt;/li>
+                  &lt;li>&lt;strong>Cleansing the Respiratory System:&lt;/strong> Enhanced expansion capacity of the alveoli helps with oxygen intake, ensuring sufficient breathing volume, limiting the decrease in respiratory function caused by aging.&lt;/li>
+                  &lt;li>&lt;strong>Improving Metabolism and Body Composition:&lt;/strong> Physical activity helps reduce body fat, increase lean body mass, and improve the muscle-to-fat ratio. Increased energy expenditure helps with weight control.&lt;/li>
+                  &lt;li>&lt;strong>Beneficial Psychological Factors:&lt;/strong> Being in good health allows you to fully enjoy life and engage in various long-term activities. Participating in sports clubs also helps build social relationships, reducing the risk of depression and anxiety.&lt;/li>
+                &lt;/ul>
+              &lt;/section>
+              &lt;div className="w-40">
+                &lt;div style={{ margin: "0 auto", width: "500px" }}>
+                  &lt;iframe
+                    width="500"
+                    height="300"
+                    className="br3"
+                    src="https://www.youtube.com/embed/jN0pRAqiUJU?si=OFyrzeSJmsmFeRK0"
+                    title="YouTube video player"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen
+                  >&lt;/iframe>
+                &lt;/div>
+              &lt;/div>
+
+            &lt;/div> 
+            &lt;Divider />
+
+            &lt;div className="flex items-center">
+              &lt;section className="tips-section w-60">
+                &lt;h2>Mental Health &lt;Icon icon="team mb1 ml1 green" /> &lt;/h2>
+                &lt;p>Maintaining mental health is crucial for overall well-being. Here are some tips to help reduce stress, improve mood, and maintain a positive outlook:&lt;/p>
+                &lt;ul>
+                  &lt;li>&lt;strong>Practice Mindfulness:&lt;/strong> Spend a few minutes each day practicing mindfulness or meditation. These practices can help center your thoughts and reduce anxiety by focusing on the present moment.&lt;/li>
+                  &lt;li>&lt;strong>Regular Exercise:&lt;/strong> Physical activity can significantly impact your mood. A simple daily walk or a short workout session can release endorphins, which are natural mood lifters.&lt;/li> 
+                  &lt;li>&lt;strong>Healthy Eating:&lt;/strong> What you eat can affect your brain's health and your mood. Ensure a balanced diet rich in fruits, vegetables, and omega-3 fatty acids found in fish and flaxseeds.&lt;/li> 
+                  &lt;li>&lt;strong>Quality Sleep:&lt;/strong> Good sleep is essential for mental health. Try to maintain a regular sleep schedule, create a restful environment, and avoid screens before bedtime to improve sleep quality.&lt;/li>
+                  &lt;li>&lt;strong>Connect with Others:&lt;/strong> Building strong, healthy relationships with friends and family can provide you with support and reduce feelings of isolation. Don’t hesitate to share your feelings with someone you trust.&lt;/li>
+                  &lt;li>&lt;strong>Set Realistic Goals:&lt;/strong> Break up large tasks into smaller, manageable steps. Setting achievable goals can help you feel more in control and reduce stress.&lt;/li>
+                  &lt;li>&lt;strong>Limit Screen Time:&lt;/strong> Excessive time on social media or reading news can increase anxiety. Set limits on screen time and make time for offline activities you enjoy.&lt;/li>
+                  &lt;li>&lt;strong>Seek Professional Help When Needed:&lt;/strong> If stress or anxiety is interfering with your daily life, consider seeking help from a mental health professional. There's no shame in asking for assistance.&lt;/li>
+                &lt;/ul>
+              &lt;/section>
+              &lt;div className="w-40">
+                &lt;div style={{ margin: "0 auto", width: "500px" }}>
+                  &lt;iframe
+                    width="500"
+                    height="300"
+                    className="br3"
+                    src="https://www.youtube.com/embed/gwmv_KGdceA?si=voUgcHeNa7IdqWjw"
+                    title="YouTube video player"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen
+                  >&lt;/iframe>
+                &lt;/div>
+              &lt;/div>
+            &lt;/div>
+            &lt;Divider />
+
+            &lt;div className="flex items-center">
+              &lt;section className="tips-section w-60">
+                &lt;h2>Seasonal Health Tips &lt;Icon icon="calendar" className="mb1 ml1 gray"/> &lt;/h2> 
+                &lt;ul>
+                  &lt;li>&lt;strong>Spring:&lt;/strong> Spring brings renewal and blossoming flowers. If you're not allergic to pollen, it's a fantastic time for outdoor exercises. Choose a good weather day for activities like square dancing. Remember, early spring weather can be unstable, so don’t rush to change into lighter clothes too soon.&lt;/li>
+                  &lt;li>&lt;strong>Summer:&lt;/strong> Summer's heat comes with thunderstorms and unpredictable weather. Always check the weather forecast before going out to avoid getting caught in the rain. Protect yourself from "air conditioning disease" by staying hydrated and avoiding excessive exposure to air conditioning. Green bean soup is great for cooling down.&lt;/li> 
+                  &lt;li>&lt;strong>Autumn:&lt;/strong> Autumn, a season of harvest, offers a warm climate perfect for travel. Enjoy the holidays like Mid-Autumn Festival and National Day with loved ones. The weather is generally pleasant, making it ideal for exercising outdoors. Focus on consistency in your workout routine to enjoy the crisp autumn air.&lt;/li> 
+                  &lt;li>&lt;strong>Winter:&lt;/strong> Winter calls for skin care due to dry conditions and cold winds. Keeping warm is crucial; prioritize health over fashion. Staying indoors all winter is not advisable as it can weaken your immune system. Make the most of sunny winter days for outdoor activities, which can boost your vitamin D levels and immunity.&lt;/li>
+                &lt;/ul>
+              &lt;/section>
+              &lt;div className="w-40">
+                &lt;div style={{ margin: "0 auto", width: "500px" }}>
+                  &lt;iframe
+                    width="500"
+                    height="300"
+                    className="br3"
+                    src="https://www.youtube.com/embed/KlfgN_muPXk?si=JI_TwqVq2NT12e3h"
+                    title="YouTube video player"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen
+                  >&lt;/iframe>
+                &lt;/div>
+              &lt;/div>
+
+            &lt;/div>
+
+            
+          &lt;/div>
+        &lt;/div>
+      &lt;/>
+      )}
+      &lt;/div>
+    );
+  
+  }  
+
+
+}
+
+export default HealthTips;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="App.html">App</a></li><li><a href="Calories.html">Calories</a></li><li><a href="Dashboard.html">Dashboard</a></li><li><a href="Diet.html">Diet</a></li><li><a href="HealthTips.html">HealthTips</a></li><li><a href="Loader.html">Loader</a></li><li><a href="Login.html">Login</a></li><li><a href="Navigation.html">Navigation</a></li><li><a href="Nutrients.html">Nutrients</a></li><li><a href="Recipes.html">Recipes</a></li><li><a href="Register.html">Register</a></li></ul><h3>Global</h3><ul><li><a href="global.html#SearchRecipeUI">SearchRecipeUI</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sat May 04 2024 00:29:08 GMT+0500 (Pakistan Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
