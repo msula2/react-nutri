@@ -96,3 +96,18 @@ export const water_desc = `Water plays a variety of vital roles in the human bod
                             Water provides lubrication to joints and soft tissues, helping to reduce friction and keep joints flexible. Adequate hydration keeps skin moist, 
                             elastic and healthy-looking. Water participates in chemical reactions within cells, is part of the cell's structure, and is vital to the cell's survival and function. 
                             Maintaining proper fluid intake is very important to maintain health and promote the proper functioning of various body systems.`
+
+export const healthtips_desc = `Here, you'll find a wealth of information covering every aspect of well-being, from dietary guidance to exercise routines, mental health strategies, 
+                                and seasonal wellness tips. Whether you're looking to fine-tune your diet, kickstart a new fitness regimen, boost your mood, or 
+                                navigate the changing seasons with ease, you've come to the right place. Our aim is to empower you with practical advice and insights to help
+                                 you live your healthiest, happiest life. So, dive in and discover how to optimize your health and vitality, one tip at a time!`
+
+export const recipes_desc = `Our recipes aren't just about taste; they're also packed with essential nutrients to support your health and well-being. 
+                            We believe in the power of food to nourish both body and soul. That's why each recipe is thoughtfully crafted to provide a balance of flavors and 
+                            nutrients, ensuring that you not only enjoy your meals but also fuel your body with goodness. Follow the steps below to get started!`
+
+export const calories_desc = `Welcome to the Calories Module! Here, we use the exchange list method to calculate calorie intake, aiming to help you manage your consumption effectively for your health and wellness goals.
+                             This method simplifies calorie counting by grouping foods based on their macronutrient content. Each group is assigned a set number of exchanges, representing portion sizes with similar calorie and nutrient content.
+`
+export const diet_desc = `Tell us more about yourself ! Using the information provided by you, a diet plan will be created, tailored specifically to your needs. To determine your total daily energy expenditure (TDEE) a formula proposed by Harris-Benedict will be used.
+                          The formula uses your age, weight, gender, weight and activity levels. To loose weight you must keep your calories below your TDEE and to gain weight you must keep your calories above TDEE.`

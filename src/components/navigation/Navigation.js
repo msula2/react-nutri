@@ -1,46 +1,125 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import nutrients from '../../assets/imgs/nutrients.png';
-import calories from '../../assets/imgs/calories.png';
+import { Navbar, Button, Alignment, Icon, Alert } from "@blueprintjs/core";
 import './Navigation.css';
 
-class Navigation extends Component{
-    constructor(){
-        super();
+/**
+ * 
+ * The Navigation component is the top most navbar that allows the user to navigate to 
+ * different parts of the website
+ * 
+ * 
+ * 
+ * 
+ * @author Hamdan Sulaiman
+ *
+ * @example 
+ * <Navigation />
+ *
+ */
+
+class Navigation extends Component {
+    constructor(props){
+        super(props);
         this.state = {
-            active: false
+            alert : {
+                isLoading: false,
+                isOpen: false
+            }
         }
     }
-    tabActive = () =>{
-        this.setState({active: !this.state.active})
+    
+    showAlert = () => {
+        this.setState({ alert: { ...this.state.alert, isOpen: true } });
     }
-    render(){
+    handleMoveCancel = () => {
+        let alert = {...this.state.alert};
+        alert.isOpen = false;
+        this.setState({alert});
+    }
+
+    handleLogout = () => {
+        let alert = {...this.state.alert};
+        alert.isLoading = true;
+        this.setState({ alert});
+
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/logout`, {
+            method: 'get',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result == "success"){
+                let alert = {
+                    isLoading: false,
+                    isOpen: false
+                }
+                this.setState({ alert });
+                if (data.result === "success"){
+                   window.location.replace("/#/login");
+                } 
+            }
+            
+            
+        })
+        .catch(error => {
+            console.error('Error occurred while logging out', error);
+        });
+    };
+
+    render() {
+        const { active } = this.props;
+        const {alert} = this.state;
+
         return (
-            <nav className="bg-white-90 w-100 bb">
-                <ul className="f5 fw6 ttu tracked list mb0 mt0">
-                    <div className="flex items-center justify-between">
-                            <div className="f3 flex justify-start"><Link to="/" className="black">Nutri</Link></div>
-                            <div className="flex justify-end">
-                                <div className={`flex items-center bl pr3 ${this.state.active ? "bg-black-90" : "bg-white-90"}`}>
-                                    <li className="dib mr3 pa3">
-                                        <Link className={this.state.active ? "white" : "black"} to="/nutrients" onClick={this.tabActive}>Nutrients</Link>
-                                    </li>
-                                    <img src={nutrients} className="dib mw2"></img>
-                                </div>
-                                <div style={{float: "right"}} className={`flex items-center bl pr3 ${this.state.active ? "bg-black-90" : "bg-white-90"}`}>
-                                    <li className="dib mr3 pa3">
-                                        <Link className={this.state.active ? "white" : "black"} to="/calories" onClick={this.tabActive}>Calories</Link>
-                                    </li>
-                                    <img src={calories} className="dib mw2"></img>
-                                </div>
-                            </div>
-                            
-                    </div>
-                </ul>
-            </nav>
+            <Navbar>
+                <Alert
+                    style={{backgroundColor: "#6eadca", color: "#ffe39f", fontWeight: "bold"}}    
+                    confirmButtonText="Yes"
+                    onCancel={this.handleMoveCancel}
+                    cancelButtonText={<span style={{color: "white"}}>No</span>}
+                    intent={"success"}
+                    isOpen={alert.isOpen}
+                    loading={alert.isLoading}
+                    onConfirm={this.handleLogout}
+                    
+                >
+                <p>
+                    Are you sure you want to log out ?
+                </p>
+                </Alert>
+                <Navbar.Group align={Alignment.LEFT}>
+                    <Link to="/dashboard"><Navbar.Heading>Nutri. </Navbar.Heading></Link>
+                    <Navbar.Divider />
+                </Navbar.Group>
+                <Navbar.Group align={Alignment.RIGHT}>
+                    <Navbar.Divider style={{ backgroundColor: active.nutrients ? "rgb(12, 38, 85)": "", borderWidth: active.nutrients ? "2px" : "1px" }}/>
+                    <Link to="/nutrients">
+                        <Button minimal={true} large={true} text="Nutrients" style={{ backgroundColor: active.nutrients ? "#a6d940" : "", color: active.nutrients ? "#2d5c75" : "#ffe39f", height: "50px", padding: "0 20px" }} />
+                    </Link>
+                    <Navbar.Divider style={{ backgroundColor: active.nutrients || active.calories ? "rgb(12, 38, 85)": "", borderWidth: active.nutrients || active.calories ? "2px" : "1px" }} />
+                    <Link to="/calories">
+                        <Button minimal={true} large={true} text="Calories" style={{ backgroundColor: active.calories ? "#a6d940" : "", color: active.calories ? "#2d5c75" : "#ffe39f", height: "50px", padding: "0 20px" }} />
+                    </Link>
+                    <Navbar.Divider style={{ backgroundColor: active.calories || active.recipes ? "rgb(12, 38, 85)" : "", borderWidth: active.calories || active.recipes ? "2px" : "1px" }} />
+                    <Link to="/recipes">
+                        <Button minimal={true} large={true} text="Recipes" style={{ backgroundColor: active.recipes ? "#a6d940" : "", color: active.recipes ? "#2d5c75" : "#ffe39f", height: "50px", padding: "0 20px" }} />
+                    </Link>
+                    <Navbar.Divider style={{ backgroundColor: active.recipes || active.healthtips ? "rgb(12, 38, 85)": "", borderWidth: active.recipes || active.healthtips ? "2px" : "1px" }} />
+                    <Link to="/health-tips">
+                        <Button minimal={true} large={true} text="Health Tips" style={{ backgroundColor: active.healthtips ? "#a6d940" : "", color: active.healthtips ? "#2d5c75" : "#ffe39f", height: "50px", padding: "0 20px" }} />
+                    </Link>
+                    <Navbar.Divider style={{ backgroundColor: active.healthtips ? "rgb(12, 38, 85)": "", borderWidth: active.healthtips ? "2px" : "1px" }} />
+                    <Link>
+                    <Icon icon="log-out" className="mr2 ml4" onClick={this.showAlert} style={{color: "#a6d940"}}/>
+                    </Link>
+                    
+                   
+                </Navbar.Group>
+            </Navbar>
         );
     }
-    
 }
 
 export default Navigation;

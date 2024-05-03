@@ -12,10 +12,14 @@ export const tracking_options = [
 
 export const food_groups = [
     {label: "Starch/Bread", value: "starch"},
-    {label: "Meat", value: "meat"},
+    {label: "Lean Meat", value: "meat_lean"},
+    {label: "Medium Fat Meat", value: "meat_mfat"},
+    {label: "High Fat Meat", value: "meat_hfat"},
     {label: "Vegetable", value: "vegetable"},
     {label: "Fruit", value: "fruit"},
-    {label: "Milk", value: "milk"},
+    {label: "Skim Milk", value: "milk_skim"},
+    {label: "Low Fat Milk", value: "milk_lfat"},
+    {label: "Whole Milk", value: "milk_whole"},
     {label: "Fat", value: "fat"},
 
 ]
@@ -31,14 +35,13 @@ export const starches = [
 
 export const starch_items = {
     cereals_grain_pasta_ss: [
-        { label: "Bran cereals, concentrated", value: "bran_cereals_conc" },
-        { label: "Bran cereals, flaked", value: "bran_cereals_flaked" },
+        { label: "Bran cereals (concentrated)", value: "bran_cereals_conc" },
+        { label: "Bran cereals (flaked)", value: "bran_cereals_flaked" },
         { label: "Bulgur (cooked)", value: "bulgur_cooked" },
         { label: "Cooked cereals", value: "cooked_cereals" },
         { label: "Cornmeal (dry)", value: "cornmeal_dry" },
         { label: "Grape Nuts", value: "grape_nuts" },
         { label: "Grits (cooked)", value: "grits_cooked" },
-        { label: "Other ready-to-eat, unsweetened (plain) cereals", value: "ready_to_eat_cereals" },
         { label: "Pasta (cooked)", value: "pasta_cooked" },
         { label: "Puffed cereal", value: "puffed_cereal" },
         { label: "Rice, white or brown (cooked)", value: "rice_cooked" },
@@ -54,24 +57,24 @@ export const starch_items = {
         { label: "Corn", value: "corn" },
         { label: "Corn on the cob", value: "corn_on_the_cob" },
         { label: "Lima beans", value: "lima_beans" },
-        { label: "Peas, green (canned or frozen)", value: "green_peas" },
+        { label: "Green Peas (canned or frozen)", value: "green_peas" },
         { label: "Plantain", value: "plantain" },
-        { label: "Potato, baked", value: "baked_potato" },
-        { label: "Potato, mashed", value: "mashed_potato" },
-        { label: "Squash, winter (acorn, butternut)", value: "winter_squash" },
-        { label: "Yam, sweet potato", value: "sweet_potato" }
+        { label: "Potato (baked)", value: "baked_potato" },
+        { label: "Potato (mashed)", value: "mashed_potato" },
+        { label: "Squash (acorn or butternut)", value: "winter_squash" },
+        { label: "Yam (sweet potato)", value: "sweet_potato" }
     ],
     bread_ss: [
         { label: "Bagel", value: "bagel" },
-        { label: "Bread sticks, crisp", value: "crisp_bread_sticks" },
+        { label: "Bread sticks (crisp)", value: "crisp_bread_sticks" },
         { label: "Croutons low fat", value: "low_fat_croutons" },
         { label: "English muffin", value: "english_muffin" },
         { label: "Frankfurter or hamburger bun", value: "bun" },
         { label: "Pita", value: "pita" },
-        { label: "Plain roll, small", value: "plain_roll" },
-        { label: "Raisin, unfrosted", value: "raisin_bread" },
-        { label: "Rye, pumpernickel", value: "rye_bread" },
-        { label: "White, Wheat, Whole wheat", value: "whole_wheat_bread" }
+        { label: "Plain roll (small)", value: "plain_roll" },
+        { label: "Raisin (unfrosted)", value: "raisin_bread" },
+        { label: "Rye (pumpernickel)", value: "rye_bread" },
+        { label: "White Wheat or Whole wheat", value: "whole_wheat_bread" }
     ],
     crackers_snacks_ss: [
         { label: "Animal crackers", value: "animal_crackers" },

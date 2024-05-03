@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/nutrients/Nutrients.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/nutrients/Nutrients.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+import { Card, H5, Button } from "@blueprintjs/core";
+import Title from '../title/Title';
+import About from '../about/About';
+import { nutrients_desc } from '../../descriptions';
+import nutrients_logo from "../../assets/imgs/nutrients.png";
+import Loader from '../loader/Loader';
+import { Alert} from "@blueprintjs/core";
+
+import "./Nutrients.css";
+
+/**
+ * 
+ * The Nutrients component disaplys the different nutrients as cards which can be clicked upon to 
+ * learn more.
+ * 
+ * @property {Object} state - The state of the component
+ * @property {Object} state.user - Represents the user logged into the session
+ * @property {Object} state.loggedIn - Represents whether the user is logged in or not, this is used to alert the user if their session ends
+ * @property {Object} state.timedOut- Represents if the user's session is valid or not
+ * @property {Object} state.loading - Flag used to trigger the loading screen
+ * @property {Object} state.alert - Flag used to trigger the alerts
+ * 
+ * 
+ * @author David Wacaser
+ * @author Yi Ren
+ * @author Hamdan Sulaiman
+ * 
+ * 
+ *
+ * @example 
+ * &lt;Nutrients />
+ *
+ */
+
+class Nutrients extends Component {
+
+    constructor(props){
+        super(props);
+        this.state = {
+            user: {
+                name: '',
+                id: ''
+            },
+            loggedIn : null,
+            timedOut: null,
+            loading: true,
+            message: '',
+            alert: {
+                isLoading: false,
+                isOpen: true
+            },
+        }
+    }
+
+    setUserDetails = (name, id, loggedIn) => {
+    this.setState({ user: { name: name, id: id }, loggedIn: loggedIn, timedOut: false});
+    };
+
+    clearSession = () => {
+
+    this.setState({ user: { name: '', id: '' }, loggedIn: false, timedOut: true});
+    };
+
+    checkSession = () => {
+    fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/user`, {
+        method: 'get',
+        headers: {'Content-Type': 'application/json'},
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.loggedIn === true){
+        this.setUserDetails(data.user.username, data.user.id, data.loggedIn);
+        } else if (data.loggedIn === false){
+        this.clearSession();
+        } else {
+        console.log(data.error);
+        }
+    });
+    };
+
+    componentDidMount() {
+        setTimeout(() => {
+            this.setState({ loading: false });
+        }, 3000);
+        this.checkSession();
+        
+    }
+
+    handleMoveConfirm = () => {
+        let alert = {...this.state.alert};
+        alert.isLoading = true;
+        this.setState({ alert });
+
+        
+        const close = () => {
+            let alert = {
+                isLoading: false,
+                isOpen: false
+            }
+            this.setState({ alert });
+            window.location.replace("/#/login");
+        };
+        setTimeout(close, 2000);
+    };
+
+  render() {
+    const {loading, message, timedOut, alert} = this.state;
+    return (
+      &lt;div>
+            {timedOut ? 
+            (
+                &lt;Alert
+                    style={{backgroundColor: "#6eadca", color: "#ffe39f", fontWeight: "bold"}}    
+                    confirmButtonText="Login"
+                    intent={"success"}
+                    isOpen={alert.isOpen}
+                    loading={alert.isLoading}
+                    onConfirm={this.handleMoveConfirm}
+                >
+                &lt;p>
+                    Your session has ended, please log back in again
+                &lt;/p>
+                &lt;/Alert>
+            )
+            :
+            (
+            &lt;>
+            {loading &amp;&amp; (
+                &lt;div className="loader-overlay">
+                    &lt;Loader message={message} />
+                &lt;/div>
+            )}
+            &lt;div className='vw-100 vh-100 d-flex flex-column justify-center items-center' style={{display: loading? 'none' : ''}}>
+                &lt;Title text="Nutrients" color="#FFE39F" />
+                &lt;About text={nutrients_desc} image={nutrients_logo} />
+                &lt;div className="nutrients-container d-flex justify-center items-center mt5">
+                    &lt;div className="nutrient-card-grid">
+                        &lt;div className="nutrient-card-container">
+                            &lt;Card interactive={true} elevation={4} className="card-content">
+                                &lt;H5>Carbohydrates&lt;/H5>
+                                &lt;p>Carbohydrates are one of the three macronutrients essential for human health, 
+                                alongside proteins and fats. They serve as the primary source of energy for 
+                                the body and play a crucial role in various physiological functions.&lt;/p>
+                                &lt;div className="card-button">
+                                &lt;Link to="/nutrients/carbohydrates" className="nutrient-link">
+                                    &lt;Button className="submit-btn" rightIcon="arrow-right" intent="success" text="Learn More" />
+                                &lt;/Link>
+                                &lt;/div>
+                            &lt;/Card>
+                        &lt;/div>
+                        &lt;div className="nutrient-card-container">
+                            &lt;Card interactive={true} elevation={4} className="card-content">
+                                &lt;H5>Proteins&lt;/H5>
+                                &lt;p>Proteins are one of the three macronutrients essential for human health, alongside 
+                                carbohydrates and fats. They serve as the building blocks of tissues, muscles, organs, 
+                                enzymes, hormones, and various other molecules in the body.&lt;/p>
+                                &lt;div className="card-button">
+                                &lt;Link to="/nutrients/protiens" className="nutrient-link">
+                                    &lt;Button className="submit-btn" rightIcon="arrow-right" intent="success" text="Learn More" />
+                                &lt;/Link>
+                                &lt;/div>
+                            &lt;/Card>
+                        &lt;/div>
+                        &lt;div className="nutrient-card-container">
+                            &lt;Card interactive={true} elevation={4} className="card-content">
+                                &lt;H5>Fats/Lipids&lt;/H5>
+                                &lt;p> Fats are essential macronutrients crucial for energy provision, insulation of 
+                                body tissues, and transportation of fat-soluble vitamins. They also play 
+                                pivotal roles in the structural integrity and functionality of cell membranes.&lt;/p>
+                                &lt;div className="card-button">
+                                &lt;Link to="/nutrients/fats" className="nutrient-link">
+                                    &lt;Button className="submit-btn" rightIcon="arrow-right" intent="success" text="Learn More" />
+                                &lt;/Link>
+                                &lt;/div>
+                            &lt;/Card>
+                        &lt;/div>
+                        &lt;div className="nutrient-card-container">
+                            &lt;Card interactive={true} elevation={4} className="card-content">
+                                &lt;H5>Vitamins&lt;/H5>
+                                &lt;p> Vitamins are micronutrients that are essential for various metabolic processes 
+                                in the body. They play crucial roles in growth, immunity, and overall health. 
+                                Vitamins are typically categorized as water-soluble (e.g., vitamin C, B-complex vitamins) 
+                                or fat-soluble (e.g., vitamins A, D, E, K).&lt;/p>
+                                &lt;div className="card-button">
+                                &lt;Link to="/nutrients/vitamins" className="nutrient-link">
+                                    &lt;Button className="submit-btn" rightIcon="arrow-right" intent="success" text="Learn More" />
+                                &lt;/Link>
+                                &lt;/div>
+                            &lt;/Card>
+                        &lt;/div>
+                        &lt;div className="nutrient-card-container">
+                            &lt;Card interactive={true} elevation={4} className="card-content">
+                                &lt;H5>Minerals&lt;/H5>
+                                &lt;p>Minerals are inorganic elements necessary to maintain normal physiological functions and health of the human body. 
+                                They play a wide range of key roles in the body, such as the Components of bones and teeth: Calcium, 
+                                phosphorus and magnesium are the main minerals that make up bones and teeth.&lt;/p>
+                                &lt;div className="card-button">
+                                &lt;Link to="/nutrients/minerals" className="nutrient-link">
+                                    &lt;Button className="submit-btn" rightIcon="arrow-right" intent="success" text="Learn More" />
+                                &lt;/Link>
+                                &lt;/div>
+                            &lt;/Card>
+                        &lt;/div>
+                        &lt;div className="nutrient-card-container">
+                            &lt;Card interactive={true} elevation={4} className="card-content">
+                                &lt;H5>Water&lt;/H5>
+                                &lt;p>Water plays a variety of vital roles in the human body. Water is the main component of the body, 
+                                accounting for approximately 60% of an adult's body weight. It helps maintain normal circulation and balance of blood, 
+                                saliva, and other body fluids.&lt;/p>
+                                &lt;div className="card-button" style={{height: '80px'}}>
+                                &lt;Link to="/nutrients/water" className="nutrient-link">
+                                    &lt;Button className="submit-btn" rightIcon="arrow-right" intent="success" text="Learn More" />
+                                &lt;/Link>
+                                &lt;/div>
+                            &lt;/Card>
+                        &lt;/div>
+                    &lt;/div>
+                &lt;/div>
+            &lt;/div>
+            &lt;/>
+            )}
+        &lt;/div>  
+     
+    );
+  }
+}
+
+export default Nutrients;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="App.html">App</a></li><li><a href="Calories.html">Calories</a></li><li><a href="Dashboard.html">Dashboard</a></li><li><a href="Diet.html">Diet</a></li><li><a href="HealthTips.html">HealthTips</a></li><li><a href="Loader.html">Loader</a></li><li><a href="Login.html">Login</a></li><li><a href="Navigation.html">Navigation</a></li><li><a href="Nutrients.html">Nutrients</a></li><li><a href="Recipes.html">Recipes</a></li><li><a href="Register.html">Register</a></li></ul><h3>Global</h3><ul><li><a href="global.html#SearchRecipeUI">SearchRecipeUI</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sat May 04 2024 00:29:08 GMT+0500 (Pakistan Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

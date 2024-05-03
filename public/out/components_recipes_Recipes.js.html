@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/recipes/Recipes.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/recipes/Recipes.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { Component } from 'react';
+import Title from '../title/Title';
+import { Omnibar } from "@blueprintjs/select";
+import { Card, H4, Button, Drawer, Icon, MenuItem, ButtonGroup, OverlayToaster, Toast2, Alert} from "@blueprintjs/core";
+import "./Recipes.css";
+import About from '../about/About';
+import Loader from '../loader/Loader';
+import SearchRecipeUI from './SearchRecipeUI';
+import AddRecipeUI from './AddRecipeUI';
+import { recipes_desc } from '../../descriptions';
+
+/**
+ * 
+ * The Recipe component allows the user to search for different recipes in the database
+ * and incase they are not present the user can create a new recipe or delete one
+ * 
+ * @property {Object} state - The state of the component
+ * @property {Object} state.user - Represents the user logged into the session
+ * @property {Object} recipe_data - Represents the recipe which the user has searched for
+ * @property {Object} new_recipe_data - Represents the new recipe which the user has created
+ * @property {Array}  recipes - Represents the list of recipes coming from the database
+ * @property {Array}  grams_breakdown - Represents the breakdown of wieght by nutrient type
+ * @property {Object} state.loggedIn - Represents whether the user is logged in or not, this is used to alert the user if their session ends
+ * @property {Object} state.timedOut- Represents if the user's session is valid or not
+ * @property {Object} state.loading - Flag used to trigger the loading screen
+ * @property {Object} state.alert - Flag used to trigger the alerts
+ * @property {Object} state.ToasterSuccess - Used to display alert on success
+ * @property {Object} state.ToasterFailed - Used to display alert on failure
+ * @property {boolean} isSearchOpen - Indicates whether the search feature is currently open or not.
+ * @property {boolean} isSearchDeleteOpen - Indicates whether the search deletion feature is currently open or not.
+ * @property {boolean} isDrawerOpen - Indicates whether the drawer (like a sidebar or a dropdown menu) is currently open or not.
+ * @property {string} drawerTitle - Represents the title of the drawer. It's currently empty if not set.
+ * 
+ * 
+ * 
+ * @author David Wacaser
+ *
+ * @example 
+ * &lt;Recipes/>
+ *
+ */
+
+
+
+class Recipes extends Component{
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            user: {
+                name: '',
+                id: ''
+            },
+            loggedIn : null,
+            timedOut: null,
+            loading: true,
+            message: '',
+            alert: {
+                isLoading: false,
+                isOpen: true
+            },
+            alert_delete: {
+                isLoading: false,
+                isOpen: true
+            },
+            delete_recipe: {},
+            recipe_title: '',
+            recipe_data: {
+                title: '',
+                description: '',
+                ingredients: '',
+                instructions: '',
+                id: 0,
+            },
+            new_recipe_data: {
+                title: '',
+                description: '',
+                ingredients: '',
+                instructions: '',
+            },
+            isSearchOpen: false,
+            isSearchDeleteOpen: false,
+            isDrawerOpen: false,
+            drawerTitle: '',
+            recipes: [],
+            serving_unit: '',
+            grams_breakdown: [],
+            calories_breakdown: {},
+            showUi: {
+                searchRecipe: false,
+                addRecipe: false,
+                deleteRecipe: false
+            },
+            ToasterSuccess: {
+                show: false,
+                message: ''
+            },
+            ToasterFailed: {
+                show: false,
+                message: ''
+            },
+            errors: {
+                recipe_title: '',
+                ingredients: 'A meal must be added first.'
+            }
+            
+        };
+    }
+    /**
+     * Upates the toaster to display either success or failure
+     * 
+     * @summary This method controls the alerts to display
+     * 
+     * @instance
+     * @memberOf Recipes
+     * @method updateToaster
+     * 
+     */
+    updateToaster = (success, failed) => {
+        if (success !== null) {
+          this.setState({ToasterSuccess: {show: success.show, message: success.message}});
+        }
+        if (failed !== null) {
+            this.setState({ToasterFailed: {show: failed.show, message: failed.message}});
+        }
+    };
+
+    /**
+     * Upates the timeout
+     * 
+     * @summary This method updates whther the user should be timedout or not
+     * 
+     * @instance
+     * @memberOf Recipes
+     * @method updateToaster
+     * 
+     */
+
+    updateTimeout = (value) => {
+        this.setState({timedOut: value});
+    };
+
+
+    /**
+     * Used to close the alert that is disaplyed either of succes or failure
+     * 
+     * @instance
+     * @memberOf Recipes
+     * @method handleMoveConfirm
+     * 
+     * @summary This method controls the alert
+     * 
+     */
+    handleMoveConfirm = () => {
+        let alert = {...this.state.alert};
+        alert.isLoading = true;
+        this.setState({ alert });
+
+        
+        const close = () => {
+            let alert = {
+                isLoading: false,
+                isOpen: false
+            }
+            this.setState({ alert });
+            window.location.replace("/#/login");
+        };
+        setTimeout(close, 2000);
+    };
+
+    /**
+     * Updates the session details and whether they are logged in or not
+     * 
+     * @summary This method uses setState to set the user' data
+     * 
+     *
+     * @param {Object} name - Name of the user
+     * @param {string} id - Id of the user
+     * @param {boolean} loggedIn - Wehther the user is logged in or not
+     */
+
+
+    setUserDetails = (name, id, loggedIn) => {
+        this.setState({ user: { name: name, id: id }, loggedIn: loggedIn, timedOut: false});
+        };
+    
+        clearSession = () => {
+    
+        this.setState({ user: { name: '', id: '' }, loggedIn: false, timedOut: true});
+        };
+
+    /**
+     * Clears the session details and logs them out
+     * 
+     * @summary This method uses setState to remove the user's data
+     * 
+     *
+     */
+    
+    checkSession = () => {
+        fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/user`, {
+            method: 'get',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.loggedIn === true){
+            this.setUserDetails(data.user.username, data.user.id, data.loggedIn);
+            } else if (data.loggedIn === false){
+            this.clearSession();
+            } else {
+            console.log(data.error);
+            }
+        });
+    };
+
+    /**
+     * On mounting the componenet, it is checked if the user is in session
+     * 
+     * @instance
+     * @memberOf Register
+     * @method componentDidMount
+     */
+    
+    componentDidMount() {
+        setTimeout(() => {
+            this.setState({ loading: false });
+        }, 3000);
+        this.checkSession();
+        
+    }
+
+    /**
+     * Handles meal title change.
+     * 
+     * @instance
+     * @memberOf Recipes
+     * @method titleChange
+     * 
+     * @param {object} event - The event object.
+     * 
+     */
+    titleChange = (event) => {
+        const { value } = event.target;
+        let errors = { ...this.state.errors };
+        let dirty = {...this.state.dirty};
+
+        dirty.title = true;
+
+        errors.title = value.trim() === '' ? 'Recipe title is required.' : '';
+
+
+        this.setState({ title: value, errors, dirty});
+    }
+
+    /**
+     * Handles meal decription change.
+     * 
+     * @instance
+     * @memberOf Recipes
+     * @method descriptionChange
+     * 
+     * @param {object} event - The event object.
+     * 
+     */
+
+    descriptionChange = (event) => {
+        const { value } = event.target;
+        this.setState({ description: value});
+    }
+
+    /**
+     * Handles meal ingredient change.
+     * 
+     * @instance
+     * @memberOf Recipes
+     * @method ingredientsChange
+     * 
+     * @param {object} event - The event object.
+     * 
+     */
+
+
+    ingredientsChange = (event) => {
+        const { value } = event.target;
+        this.setState({ ingredients: value});
+    }
+
+    /**
+     * Handles meal instructions change.
+     * 
+     * @instance
+     * @memberOf Recipes
+     * @method instructionsChange
+     * 
+     * @param {object} event - The event object.
+     * 
+     */
+
+
+
+    instructionsChange = (event) => {
+        const { value } = event.target;
+        this.setState({ instructions: value});
+    }
+
+    /**
+     * Whenever the name changes for the recipe in the search bar, a query is made to the backend to fetch all possible
+     * enteries that start with the first letter
+     * 
+     * @instance
+     * @memberOf Recipes
+     * @method nameChange
+     * 
+     * @param {object} event - The event object.
+     * 
+     */
+   
+
+
+    nameChange = (event) => {
+        let value = event;
+
+        if(value.trim() !== ''){
+            fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/recipes/${value}/get`, {
+                method: 'get',
+                headers: {'Content-Type': 'application/json'},
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.result === "success"){
+                    this.setState({recipes: data.data});
+                } 
+            })
+            .catch(error => {
+                console.error('Error fetching recipe:', error);
+            });
+        }
+
+    }
+
+    /**
+     * Handles opening the search bar
+     * 
+     * @instance
+     * @memberOf Recipes
+     * @method openSearchBar
+     * 
+     * 
+     */
+
+
+    openSearchBar = () => {
+        this.setState({isSearchOpen: true});
+    }
+
+    /**
+     * Handles closing the search bar
+     * 
+     * @instance
+     * @memberOf Recipes
+     * @method handleCloseChange
+     * 
+     * 
+     */
+
+    handleSearchClose = () => {
+        this.setState({isSearchOpen: false});
+    }
+
+    /**
+     * Handles opeining the delete search bar
+     * 
+     * @instance
+     * @memberOf Recipes
+     * @method openDeleteBar
+     * 
+     * 
+     */
+
+
+    openDeleteBar = () => {
+        this.setState({isSearchDeleteOpen: true});
+    }
+
+    /**
+     * Handles closing the delete search bar
+     * 
+     * @instance
+     * @memberOf Recipes
+     * @method handleDeleteClose
+     * 
+     * 
+     */
+
+    handleDeleteClose = () => {
+        this.setState({isSearchDeleteOpen: false});
+    }
+
+    /**
+     * Handles opening the model that contains the add recipe's ui
+     * 
+     * @instance
+     * @memberOf Recipes
+     * @method openAddRecipe
+     * 
+     * 
+     */
+
+
+    openAddRecipe = () => {
+        let showUi = {...this.state.showUi};
+        Object.keys(showUi).forEach(key => {
+            showUi[key] = key === 'addRecipe';
+        });
+        this.setState({isDrawerOpen: true, showUi, drawerTitle: "Add Recipe"});
+    }
+    
+    closeDrawer = () => {
+        
+        this.setState({isDrawerOpen: false});
+    }
+
+
+    handleItemSelectSearch = (recipe) => {
+        let showUi = {...this.state.showUi};
+        Object.keys(showUi).forEach(key => {
+            showUi[key] = key === 'searchRecipe';
+        });
+        this.setState({isSearchOpen: false, isDrawerOpen: true, drawerTitle: recipe.title, recipe_data: recipe, showUi});
+    }
+
+    handleItemDeleteSearch = (recipe) => {
+        this.setState({isSearchDeleteOpen: false});
+        let showUi = {...this.state.showUi};
+        Object.keys(showUi).forEach(key => {
+            showUi[key] = key === 'deleteRecipe';
+        });
+        this.setState({recipe_data: recipe, showUi});
+    }
+
+
+    handleDeleteConfirm = () => {
+        let alert_delete = {...this.state.alert};
+        alert_delete.isLoading = true;
+        this.setState({ alert_delete });
+
+        fetch(`${process.env.NODE_ENV==='development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/recipe/delete`, {
+            method: 'delete',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include',
+            body: JSON.stringify({
+                title: this.state.recipe_data.title
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result === "success"){
+               this.updateToaster({show: true, message: data.message}, null)
+            } else{
+                this.updateToaster(null, {show: true, message: data.message})
+            }
+            let alert_delete = {
+                isLoading: false,
+                isOpen: false
+            }
+            this.setState({ alert_delete });
+        })
+        .catch(error => {
+            console.error('Error occurred while deleting recipe:', error);
+        });
+        this.setState({recipe_data: {}})
+
+    };
+
+    handleItemSelectDelete = (recipe) => {
+        let showUi = {...this.state.showUi};
+        Object.keys(showUi).forEach(key => {
+            showUi[key] = key === 'deleteRecipe';
+        });
+        this.setState({isSearchOpen: false, showUi, delete_recipe: recipe});
+    }
+
+    renderItem = (recipe, { handleClick, modifiers }) => {
+        return (
+            &lt;MenuItem
+                key={recipe.title}
+                text={recipe.title}
+                onClick={() => handleClick(recipe)}
+                active={modifiers.active}
+            />
+        );
+    };
+
+    itemMatcher = (query, recipes) => {
+        const matches = recipes.filter(recipe => {
+            return recipe.title.toLowerCase().includes(query.toLowerCase());
+        });
+    
+        return matches;
+    };
+
+    render(){
+        const {recipe_data, recipe_title, isSearchOpen, isSearchDeleteOpen, recipes, timedOut, ToasterSuccess, ToasterFailed,loading, drawerTitle, isDrawerOpen, message, alert,alert_delete, showUi, errors } = this.state;
+        return (
+            &lt;div className='vh-100 d-flex flex-column justify-center items-center'>
+                {timedOut ? 
+                (
+                    &lt;Alert
+                        style={{backgroundColor: "#6eadca", color: "#ffe39f", fontWeight: "bold"}}    
+                        confirmButtonText="Login"
+                        intent={"success"}
+                        isOpen={alert.isOpen}
+                        loading={alert.isLoading}
+                        onConfirm={this.handleMoveConfirm}
+                    >
+                    &lt;p>
+                        Your session has ended, please log back in again
+                    &lt;/p>
+                    &lt;/Alert>
+                )
+                :
+                (
+                &lt;>
+               {loading &amp;&amp; (
+                    &lt;div className="loader-overlay">
+                        &lt;Loader message={message} />
+                    &lt;/div>
+                )}
+                {ToasterSuccess.show &amp;&amp;
+                (&lt;OverlayToaster className="mt5">
+                    &lt;Toast2 
+                    icon="tick-circle" 
+                    intent="success" 
+                    message={ToasterSuccess.message}
+                    isCloseButtonShown={false}
+                    action={{
+                        text: "Refresh",
+                        onClick: () => window.location.reload() 
+                    }}
+                    timeout={0}
+                    
+                    />
+                &lt;/OverlayToaster>
+                )}
+                {ToasterFailed.show &amp;&amp;
+                (&lt;OverlayToaster className="mt5">
+                    &lt;Toast2 
+                    icon="warning-sign" 
+                    intent="danger" 
+                    message={ToasterFailed.message} 
+                    isCloseButtonShown={false}
+                    action={{
+                        text: "Refresh",
+                        onClick: () => window.location.reload() 
+                    }}
+                    timeout={0}
+                    
+                    />
+                &lt;/OverlayToaster>
+                )}
+                &lt;div className="flex">
+                &lt;div className="w-60">
+                    &lt;Title text={`Recipes`} />
+                    &lt;About text={recipes_desc}/>
+                    &lt;div style={{paddingLeft: "2rem", paddingRight: "2rem", marginLeft: "4rem"}}>
+                        &lt;h2>Instructions &lt;Icon icon="info-sign" className="mb1 ml1"/> &lt;/h2>
+                        &lt;ul className="w-60">
+                        &lt;li>&lt;strong className="mr2">Search Recipes:&lt;/strong>Explore our database of recipes that are designed to be packed with nutrients. Selecting a recipe will show details regarding its ingredients, the calories present in them, the instructions for preparing them. Click on the Search Recipes button to get started!&lt;/li>
+                        &lt;li>&lt;strong className="mr2">Add Recipes:&lt;/strong>Unable to find a recipe you are looking for ? You can create a personalized recipe using the Add Recipe button. Create a recipe, add ingredients and the method of preperation!&lt;/li>
+                        &lt;li>&lt;strong className="mr2">Delete Recipes:&lt;/strong>Added the wrong recipe by mistake, you can delete it using the Delete Recipe button!&lt;/li>
+                        &lt;/ul>
+                    &lt;/div>
+                &lt;/div>
+                &lt;div className="flex items-center w-40">
+                    &lt;div className="mt5 flex">
+                        &lt;div>   
+                            &lt;Card interactive={true} elevation={4} className="card-content flex items-center justify-center" style={{height: "300px", width: "300px"}}>
+                            &lt;div>
+                                &lt;ButtonGroup fill={true} large={true} vertical={true}>
+                                    &lt;Button className="customButton submit-btn" icon={&lt;Icon icon="database" intent="primary" style={{color: "white"}} />} text="Search for a recipe" onClick={this.openSearchBar}/>
+                                    &lt;Button className="customButton submit-btn" icon={&lt;Icon icon="plus" intent="primary" style={{ color: "white" }} />} text="Add Recipe" onClick={this.openAddRecipe}/>
+                                    &lt;Button className="customButton submit-btn" icon={&lt;Icon icon="delete" intent="primary" style={{ color: "white" }} />} text="Delete Recipe" onClick={this.openDeleteBar}/>
+                                &lt;/ButtonGroup>
+                            &lt;/div>
+                            &lt;Omnibar
+                                isOpen={isSearchOpen}
+                                itemRenderer={this.renderItem}
+                                onQueryChange={this.nameChange}
+                                items={recipes}
+                                itemListPredicate={this.itemMatcher}
+                                onItemSelect={this.handleItemSelectSearch}
+                                overlayProps={{ hasBackdrop: true}}
+                                resetOnSelect={true}
+                                onClose={this.handleSearchClose}
+                                noResults={&lt;MenuItem disabled={true} text="No results." />}
+                            />
+                            &lt;Omnibar
+                                isOpen={isSearchDeleteOpen}
+                                itemRenderer={this.renderItem}
+                                onQueryChange={this.nameChange}
+                                items={recipes}
+                                itemListPredicate={this.itemMatcher}
+                                onItemSelect={this.handleItemDeleteSearch}
+                                overlayProps={{ hasBackdrop: true}}
+                                resetOnSelect={true}
+                                onClose={this.handleDeleteClose}
+                                noResults={&lt;MenuItem disabled={true} text="No results." />}
+                            />
+                            {showUi.deleteRecipe &amp;&amp;
+                            &lt;Alert
+                            style={{backgroundColor: "#6eadca", color: "#ffe39f", fontWeight: "bold"}}    
+                            confirmButtonText="Delete"
+                            intent={"danger"}
+                            isOpen={alert_delete.isOpen}
+                            loading={alert_delete.isLoading}
+                            onConfirm={this.handleDeleteConfirm}
+                            >
+                            &lt;p>
+                                Are you sure you want to delete this recipe ?
+                            &lt;/p>
+                            &lt;/Alert>
+                            }
+                            &lt;Drawer
+                                title={&lt;span style={{color: "#FFE39F", fontSize: "25px"}}>{drawerTitle}&lt;/span>}
+                                size={"550px"}
+                                canOutsideClickClose={true}
+                                canEscapeKeyClose={true}
+                                hasBackdrop={true}
+                                isCloseButtonShown={true}
+                                isOpen={isDrawerOpen}
+                                onClose={this.closeDrawer}
+                            >
+                                &lt;div className="w-100 h-100">
+                                    {showUi.searchRecipe &amp;&amp; 
+                                        &lt;div className="pa4 bp5-text-large">
+                                        &lt;div className="mt4 bp5-text-large">
+                                            &lt;H4>Description&lt;/H4>
+                                            &lt;p>{recipe_data.description}&lt;/p>
+                                        &lt;/div>
+                                        &lt;div className="mt4 bp5-text-large">
+                                            &lt;H4>Ingredients&lt;/H4>
+                                            &lt;SearchRecipeUI recipeId={recipe_data.id} /> 
+                                        &lt;/div>
+                                        &lt;div className="mt4 bp5-text-large">
+                                            &lt;H4>Instructions&lt;/H4>
+                                            &lt;ol>
+                                            {recipe_data.instructions.split(",").map((instruction, index) => (
+                                                &lt;li style={{color:"#ffffffd6", textTransform: "capitalize"}} key={index}>{instruction.trim()}&lt;/li>
+                                            ))}
+                                            &lt;/ol>
+                                        &lt;/div>
+                                    &lt;/div>
+                                    }
+                                    {showUi.addRecipe &amp;&amp; 
+                                        &lt;AddRecipeUI  updateToaster={this.updateToaster}
+                                        updateTimeout={this.updateTimeout}/>
+                                    }
+                                &lt;/div>
+                                
+                            &lt;/Drawer>
+
+                            &lt;/Card>
+                        &lt;/div>
+                    &lt;/div>
+                    
+                &lt;/div>
+                &lt;/div>
+                
+                
+               
+                 &lt;/>
+                )}  
+            &lt;/div>
+        );
+    }
+    
+}
+export default Recipes;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="App.html">App</a></li><li><a href="Calories.html">Calories</a></li><li><a href="Dashboard.html">Dashboard</a></li><li><a href="Diet.html">Diet</a></li><li><a href="HealthTips.html">HealthTips</a></li><li><a href="Loader.html">Loader</a></li><li><a href="Login.html">Login</a></li><li><a href="Navigation.html">Navigation</a></li><li><a href="Nutrients.html">Nutrients</a></li><li><a href="Recipes.html">Recipes</a></li><li><a href="Register.html">Register</a></li></ul><h3>Global</h3><ul><li><a href="global.html#SearchRecipeUI">SearchRecipeUI</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sat May 04 2024 00:29:08 GMT+0500 (Pakistan Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

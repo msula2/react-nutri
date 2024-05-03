@@ -1,0 +1,109 @@
+/* Calories.css */
+
+.calories-container {
+    margin: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .calories-content {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .form-title,
+  .table-title {
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .form-field {
+    margin-bottom: 20px;
+  }
+  
+  .field-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .field-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .select {
+    width: 100%;
+  }
+  
+  .err {
+    position: relative;
+    display: inline-block;
+    margin-left: 10px;
+  }
+  
+  .error-icon {
+    color: #ff6347;
+  }
+  
+  .btn-submit {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .btn-submit:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .calories-form {
+    flex: 1;
+    margin-right: 20px;
+  }
+  
+  .calories-table {
+    flex: 1;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .table-title {
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .meal-table {
+    width: 100%;
+  }
+  
+  .meal-table th,
+  .meal-table td {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .meal-table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+  }
+  
+  .meal-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+
+.css-13cymwt-control{
+  border-radius: 17px !important;
+}
