@@ -6,8 +6,47 @@ import Title from '../title/Title';
 import About from '../about/About';
 import MealLineChart from './MealLineChart';
 
+/**
+ * 
+ * The Dashboard component displays the goal and current calories intake of 
+ * the user for the day. Alongside this it also displays the line chart showing
+ * the calories in each meal
+ * 
+ * @property {Object} state - The state of the component
+ * @property {Object} state.user - Represents the user logged into the session
+ * @property {Object} state.diet.current - Represents the current meals of the user and the total calories consumed by them today
+ * @property {Object} state.diet.current.tdee - Represents the total calories consumed by them today
+ * @property {Object} state.diet.current.meals - Represents the current meals of the user 
+ * @property {Object} state.diet.goal.tdee - Represents the goal calories for the user
+ * @property {Object} state.diet.goal.action - Represents wether the user wants to gain or loose weight
+ * @property {Object} state.loggedIn - Represents whether the user is logged in or not, this is used to alert the user if their session ends
+ * @property {Object} state.timedOut- Represents if the user's session is valid or not
+ * @property {Object} state.loading - Flag used to trigger the loading screen
+ * @property {Object} state.alert - Flag used to trigger the alerts
+ * 
+ * 
+ * 
+ * @author Hamdan Sulaiman
+ *
+ * @example 
+ * <Dashboard />
+ *
+ */
+
 class Dashboard extends Component {
-    constructor(props) {
+  
+    /**
+     * Initializes the state of the Dashboard component.
+     *
+     * @summary This method initializes the state of the Dashboard component with default values.
+     * 
+     * @constructor
+     * @param {Object} props - The props passed to the Dasboard component.
+     * @constructs Dasboard
+     * @memberOf Dashboard
+     * @method constructor
+     */  
+  constructor(props) {
       super(props);
       this.state = {
         user: {
@@ -38,14 +77,55 @@ class Dashboard extends Component {
       };
     }
 
+    /**
+     * Updates the session details and whether they are logged in or not
+     * 
+     * @summary This method uses setState to set the user' data
+     * 
+     * @instance
+     * @memberOf Dashboard
+     * @method setUserDetails
+     *
+     * @param {Object} name - Name of the user
+     * @param {string} id - Id of the user
+     * @param {boolean} loggedIn - Wehther the user is logged in or not
+     */
+
     setUserDetails = (name, id, loggedIn) => {
       this.setState({ user: { name: name, id: id }, loggedIn: loggedIn, timedOut: false});
       };
+
+      /**
+     * Clears the session details and logs them out
+     * 
+     * @summary This method uses setState to remove the user's data
+     * 
+     * @instance
+     * @memberOf Dashboard
+     * @method clearSession
+     *
+     * @param {Object} name - Name of the user
+     * @param {string} id - Id of the user
+     * @param {boolean} loggedIn - Wehther the user is logged in or not
+     */
   
       clearSession = () => {
   
       this.setState({ user: { name: '', id: '' }, loggedIn: false, timedOut: true});
       };
+
+
+    /**
+     * Fetches the user's details and diet plan
+     * 
+     * @summary This method uses setState to remove the user's data
+     * 
+     * @instance
+     * @memberOf Dashboard
+     * @method fetchUserDetails
+     *
+     * @param {string} id - Id of the user
+     */
 
       fetchDietDetails = (id) => {
         if (id != undefined){
@@ -61,6 +141,16 @@ class Dashboard extends Component {
         }
         
       }
+
+    /**
+     * Check's wehther the user is part of the session or not if the user is logged in, the user's details are set, if not the user's details are cleared
+     * 
+     * @summary This method check's if the user is in session
+     * 
+     * @instance
+     * @memberOf Dashboard
+     * @method checkSession
+     */
   
       checkSession = () => {
       fetch(`${process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_DEPLOYED_URL}/user`, {
@@ -82,6 +172,14 @@ class Dashboard extends Component {
       });
       };
 
+      /**
+     * On mounting the componenet, it is checked if the user is in session and the user's diet plan is fetches
+     * @summary This method checks for the sesion and fetches the diet plan on mounting
+     * 
+     * @instance
+     * @memberOf Dashboard
+     * @method componentDidMount
+     */
   
       componentDidMount() {
           setTimeout(() => {
@@ -108,6 +206,19 @@ class Dashboard extends Component {
           };
           setTimeout(close, 2000);
       };
+
+      /**
+     * Displays the components of the Dashboard Module
+     *
+     * @summary This method renders the components of the Dashboard Module.
+     * 
+     * @instance
+     * @memberOf Dashboard
+     * @method render
+     * 
+     * @returns {JSX.Element} The JSX elements representing the rendered components.
+     * 
+     */
   
     render() {
 
