@@ -6,6 +6,72 @@ import { Select} from '@blueprintjs/select';
 import Loader from '../loader/Loader';
 import { diet_desc } from '../../descriptions';
 
+/**
+ * 
+ * The Diet component prompts the user for personal details such as their age, gender
+ * wieght, height and based on their response their tdee and bmr is calculated
+ * 
+ * 
+ * @property {Object} state - The state of the component
+ * @property {boolean} state.loading - Flag to indicate if the component is in loading state
+ * @property {Object} state.user - Represents the user logged into the session
+ * @property {string} state.user.id - User ID extracted from URL parameters
+ * @property {number} state.user.weight - User weight
+ * @property {Object} state.user.weight_unit - Represents the unit of user's weight
+ * @property {string} state.user.weight_unit.label - Label for the weight unit
+ * @property {string} state.user.weight_unit.value - Value for the weight unit
+ * @property {Object} state.user.height - Represents the user's height
+ * @property {number} state.user.height.feet - User's height in feet
+ * @property {number} state.user.height.inches - User's height in inches
+ * @property {number} state.user.age - User age
+ * @property {Object} state.user.activity_level - Represents the user's activity level
+ * @property {string} state.user.activity_level.label - Label for the activity level
+ * @property {number} state.user.activity_level.value - Value for the activity level
+ * @property {string} state.user.activity_level.info - Information about the activity level
+ * @property {Object} state.user.goal - Represents the user's weight goal
+ * @property {string} state.user.goal.label - Label for the weight goal
+ * @property {string} state.user.goal.value - Value for the weight goal
+ * @property {string} state.user.gender - User gender
+ * @property {Object[]} state.weight_units - Available weight units
+ * @property {string} state.weight_units[].label - Label for the weight unit
+ * @property {string} state.weight_units[].value - Value for the weight unit
+ * @property {Object[]} state.activity_levels - Available activity levels
+ * @property {string} state.activity_levels[].label - Label for the activity level
+ * @property {number} state.activity_levels[].value - Value for the activity level
+ * @property {string} state.activity_levels[].info - Information about the activity level
+ * @property {Object} state.activity_levels[].icon - Icon for visualization
+ * @property {string} state.activity_levels[].icon.type - Type of the icon
+ * @property {string} state.activity_levels[].icon.symbol - Symbol of the icon
+ * @property {Object[]} state.goals - Available weight goals
+ * @property {string} state.goals[].label - Label for the weight goal
+ * @property {string} state.goals[].value - Value for the weight goal
+ * @property {number} state.tdee - Total Daily Energy Expenditure (TDEE)
+ * @property {number} state.progress - Progress value
+ * @property {boolean} state.showProgress - Flag to indicate if progress should be shown
+ * @property {Object} state.ToasterSuccess - Success toaster notification
+ * @property {boolean} state.ToasterSuccess.show - Flag to indicate if toaster should be shown
+ * @property {string} state.ToasterSuccess.message - Success message
+ * @property {Object} state.ToasterFailed - Failure toaster notification
+ * @property {boolean} state.ToasterFailed.show - Flag to indicate if toaster should be shown
+ * @property {string} state.ToasterFailed.message - Failure message
+ * @property {Object} state.dirty - Dirty state for form fields
+ * @property {boolean} state.dirty.weight - Flag to indicate if weight field is dirty
+ * @property {boolean} state.dirty.height - Flag to indicate if height field is dirty
+ * @property {boolean} state.dirty.age - Flag to indicate if age field is dirty
+ * @property {Object} state.errors - Validation errors for form fields
+ * @property {string} state.errors.weight - Error message for weight field
+ * @property {string} state.errors.age - Error message for age field
+ * @property {string} state.errors.height - Error message for height field
+ *
+ * 
+ * 
+ * @author Hamdan Sulaiman
+ *
+ * @example 
+ * <Diet />
+ *
+ */
+
 class Diet extends Component {
     constructor(props) {
         super(props);
@@ -60,11 +126,33 @@ class Diet extends Component {
         };
     }
 
+     /**
+     * On mounting the componenet, it sets the loading flag to false after 3s
+     * @summary This method controls the loading screen
+     * 
+     * @instance
+     * @memberOf Diet
+     * @method componentDidMount
+     */
+
     componentDidMount() {
         setTimeout(() => {
             this.setState({ loading: false });
         }, 3000);
     }
+
+    /**
+     * Updates the weight of the user
+     * 
+     * @summary This method takes an onChange event and updates the weight of the user accordingly.
+     * 
+     * @instance
+     * @memberOf Diet
+     * @method weightChange
+     *
+     * @param {Event} event from input which serves as the weight of the user
+     */
+
 
     weightChange = (event) => {
         const value = event;
@@ -81,12 +169,37 @@ class Diet extends Component {
         this.setState({ user, errors, dirty});
     }
 
+    /**
+     * Updates the units of the user's weight
+     * 
+     * @summary This method takes an onChange event and updates the unit of the weight.
+     * 
+     * @instance
+     * @memberOf Diet
+     * @method unitChange
+     *
+     * @param {Event} event from input which serves as the weight of the user
+     */
+
     unitChange = (unit) => {
         const value = unit;
         let user = this.state.user;
         user.weight_unit = value;
         this.setState({ user });
     }
+
+
+    /**
+     * Updates the hieght of the user in feet
+     * 
+     * @summary This method takes an onChange event and updates the height of the user in feet
+     * 
+     * @instance
+     * @memberOf Diet
+     * @method heightFeetChange
+     *
+     * @param {Event} event from input which serves as the height of the user
+     */
 
     heightFeetChange = (event) => {
         const value = event;
@@ -103,6 +216,18 @@ class Diet extends Component {
         this.setState({ user, errors, dirty});
     }
 
+    /**
+     * Updates the hieght of the user in inches
+     * 
+     * @summary This method takes an onChange event and updates the height of the user in inches
+     * 
+     * @instance
+     * @memberOf Diet
+     * @method heightInchesChange
+     *
+     * @param {Event} event from input which serves as the height of the user
+     */
+
     heightInchesChange = (event) => {
         const value = event;
         let errors = { ...this.state.errors };
@@ -117,6 +242,18 @@ class Diet extends Component {
         
         this.setState({ user, errors, dirty});
     }
+
+    /**
+     * Updates the age of the user
+     * 
+     * @summary This method takes an onChange event and updates the age of the user
+     * 
+     * @instance
+     * @memberOf Diet
+     * @method ageChange
+     *
+     * @param {Event} event from input which serves as the age of the user
+     */
 
     ageChange = (event) => {
         const value = event;
@@ -133,11 +270,35 @@ class Diet extends Component {
         this.setState({ user, errors, dirty});
     }
 
+    /**
+     * Updates the activty of the user which can be sedentary, moderately active etc
+     * 
+     * @summary This method takes an onChange event and updates the activity of the user
+     * 
+     * @instance
+     * @memberOf Diet
+     * @method  activityLevelChange
+     *
+     * @param {Object} activityLevel from seleced option which serves as the activity level
+     */
+
     activityLevelChange = (activityLevel) => {
         let user = { ...this.state.user };
         user.activity_level = activityLevel;
         this.setState({ user });
     }
+
+    /**
+     * Updates the goal of the user which can be either to gain wiehgt or loose
+     * 
+     * @summary This method takes an onChange event and updates the goal of the user
+     * 
+     * @instance
+     * @memberOf Diet
+     * @method  goalChange
+     *
+     * @param {Object} activityLevel from seleced option which serves as the activity level
+     */
 
     goalChange = (goal) => {
         let user = { ...this.state.user };
@@ -145,12 +306,35 @@ class Diet extends Component {
         this.setState({ user });
     }
 
+
+    /**
+     * Updates the gender of the user 
+     * 
+     * @summary This method takes an onChange event and updates the gender of the user
+     * 
+     * @instance
+     * @memberOf Diet
+     * @method  handleGenderChange
+     *
+     * @param {Object} activityLevel from seleced option which serves as the activity level
+     */
+
     handleGenderChange = (event) => {
         const value = event.currentTarget.value;
         let user = { ...this.state.user };
         user.gender = value;
         this.setState({ user });
     }
+
+    /**
+     * Creates a diet plan for the user which determines their base calories and sets their peronal details.
+     *
+     * @summary This method takes no parameters. It adds a diet plan for the user
+     * 
+     * @instance
+     * @memberOf Calories
+     * @method addMeal
+     */
 
     addDiet = () => {
         const {user, ToasterSuccess, ToasterFailed} = this.state;
@@ -210,6 +394,19 @@ class Diet extends Component {
         
         
     }
+
+     /**
+     * Displays the components of the Diet Module
+     *
+     * @summary This method renders the components of the Diet Module.
+     * 
+     * @instance
+     * @memberOf Diet
+     * @method render
+     * 
+     * @returns {JSX.Element} The JSX elements representing the rendered components.
+     * 
+     */
 
     renderItem = (item, { handleClick, modifiers }) => {
         return (
