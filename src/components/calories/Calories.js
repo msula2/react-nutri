@@ -552,7 +552,7 @@ class Calories extends Component {
 
 
         return (
-            <div className='w-100 h-100 d-flex flex-column justify-center items-center'>
+            <div className='w-100 vh-100 d-flex flex-column justify-center items-center'>
                 {timedOut ? 
                 (
                     <Alert
